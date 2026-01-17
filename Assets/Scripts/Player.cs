@@ -73,8 +73,6 @@ public class Player : MonoBehaviour
     {
         inputDirection = (int)Input.GetAxisRaw("Horizontal");
 
-
-
         if (Input.GetKeyDown(KeyCode.J))        //跳跃按下
         {
             isJumpInputHold = true;
@@ -90,18 +88,14 @@ public class Player : MonoBehaviour
             isJumpInputHold = false; 
         }
 
-
-
         if (Input.GetKeyDown(KeyCode.I))       //攻击
         {
             lastAttackInputTime = Time.time;
-            isPendingAttackInput = true; //对攻击输入进行“记账”也就是挂起
+            isPendingAttackInput = true;       //对攻击输入进行“记账”也就是挂起
         }
-
 
         stateMachine.CurrentState.OnUpdate();
 
-        //Debug.Log($"[Update] time={Time.time} state={stateMachine.CurrentState}" + "   帧数：" + Time.frameCount);
     }
 
 
@@ -113,8 +107,6 @@ public class Player : MonoBehaviour
         if (isOnGround) { lastGroundTime = Time.time; }
 
         stateMachine.CurrentState.OnFixedUpdate();
-
-        //Debug.Log($"<color=red>[Fixed] fixedTime={Time.fixedTime} isOnGround = {isOnGround}</color>" + "   帧数：" + Time.frameCount);
     }
 
 
@@ -141,17 +133,11 @@ public class Player : MonoBehaviour
 
 
 
-    public bool OnIsCanJump()
-    {
-        return Time.time - lastJumpInputTime <= JumpBufferDuration;
-    }
+    public bool OnIsCanJump() =>Time.time - lastJumpInputTime <= JumpBufferDuration;
 
 
 
-    public bool OnIsCoyoteTime() 
-    {
-        return  Time.time - lastGroundTime <= coyoteTimeDuration;
-    }
+    public bool OnIsCoyoteTime() =>Time.time - lastGroundTime <= coyoteTimeDuration;
 
 
 
@@ -183,6 +169,12 @@ public class Player : MonoBehaviour
 
 
 
+    /// <summary>
+    /// 检查当前动画是否播放完成    
+    /// </summary>
+    /// <param name="actionName"></param>
+    /// <param name="targetActionLayer"></param>
+    /// <returns></returns>
     public bool IsCurrentActionFinished(int actionName, int targetActionLayer) 
     {
         if (animator.IsInTransition(targetActionLayer)) return false;
@@ -194,6 +186,11 @@ public class Player : MonoBehaviour
 
 
 
+    /// <summary>
+    /// 播放动画
+    /// </summary>
+    /// <param name="actionName"></param>
+    /// <param name="targetActionLayer"></param>
     public void OnPlayeAnimation(int actionName, int targetActionLayer) 
     {
         animator.Play(actionName , targetActionLayer);
@@ -206,7 +203,7 @@ public class Player : MonoBehaviour
     /// 正在上升
     /// </summary>
     /// <returns></returns>
-    public bool OnIsRising() { return RB2D.linearVelocity.y > 0.1f ; }
+    public bool OnIsRising() => RB2D.linearVelocity.y > 0.1f ;
     
     
 
@@ -214,7 +211,7 @@ public class Player : MonoBehaviour
     /// 在最高点
     /// </summary>
     /// <returns></returns>
-    public bool OnIsApex() { return Mathf.Abs(RB2D.linearVelocity.y) < 0.1f ; }
+    public bool OnIsApex() => Mathf.Abs(RB2D.linearVelocity.y) < 0.1f ;
     
     
 
@@ -222,7 +219,7 @@ public class Player : MonoBehaviour
     /// 正在下降
     /// </summary>
     /// <returns></returns>
-    public bool OnIsFalling() { return RB2D.linearVelocity.y < 0f ; }
+    public bool OnIsFalling() => RB2D.linearVelocity.y < 0f ;
 
 
     

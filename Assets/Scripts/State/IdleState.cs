@@ -13,7 +13,7 @@ public class IdleState : GroundState
     public override void OnEnter()
     {
         base.OnEnter();
-        Debug.Log("½øÈë´ý»ú×´Ì¬");
+        Debug.Log("??????");
 
         player.OnPlayeAnimation(AnimClips.actionIdle, AnimClips.baseLayer);
     }

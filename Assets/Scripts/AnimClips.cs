@@ -6,7 +6,8 @@ using UnityEngine;
 
 public static class AnimClips
 {
-    public static readonly int baseLayer = 0; //¶¯»­²ã£¬»ù´¡²ã
-    public static readonly int actionIdle = Animator.StringToHash("idle");     //¶¯»­×´Ì¬£º´ý»ú
-    public static readonly int actionAttack = Animator.StringToHash("attack"); //¶¯»­×´Ì¬£º¹¥»÷
+    public static readonly int baseLayer = 0; //åŠ¨ç”»å±‚çº§-åŸºç¡€å±‚çº§
+    public static readonly int actionIdle = Animator.StringToHash("idle");     //åŠ¨ç”»ç‰‡æ®µ-å¾…æœº
+    public static readonly int actionAttack = Animator.StringToHash("attack"); //åŠ¨ç”»ç‰‡æ®µ-æ”»å‡»
+
 }

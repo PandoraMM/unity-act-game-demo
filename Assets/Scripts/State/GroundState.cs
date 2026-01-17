@@ -9,7 +9,7 @@ public class GroundState : FSMState
 
     public override void OnEnter()
     {
-        Debug.Log("µØÃæ×´Ì¬");
+        Debug.Log("??????");
     }
 
     public override void OnExit()
