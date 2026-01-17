@@ -13,7 +13,7 @@ public class IdleState : GroundState
     public override void OnEnter()
     {
         base.OnEnter();
-        Debug.Log("??????");
+        Debug.Log("进入待机状态");
 
         player.OnPlayeAnimation(AnimClips.actionIdle, AnimClips.baseLayer);
     }

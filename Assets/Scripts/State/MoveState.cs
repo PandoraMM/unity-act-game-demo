@@ -13,14 +13,14 @@ public class MoveState : GroundState
     public override void OnEnter()
     {
         base.OnEnter();
-        Debug.Log("??????");
+        Debug.Log("进入移动状态");
     }
 
 
     public override void OnExit()
     {
         base.OnExit();
-        Debug.Log("??????");
+        Debug.Log("退出移动状态");
     }
 
 

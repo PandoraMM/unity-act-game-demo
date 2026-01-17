@@ -13,7 +13,7 @@ public class AttackState : FSMState
 
     public override void OnEnter()
     {
-        Debug.Log("??????" + Time.frameCount);
+        Debug.Log("进入攻击状态" + Time.frameCount);
 
         base.OnEnter();
 
