@@ -21,15 +21,16 @@ public class GroundState : FSMState
     {
         base.OnUpdate();
 
+        //=======================跳跃状态切换=======================
         if (player.OnIsCanJump() && player.OnIsCoyoteTime())
         {
-
             stateMachine.OnChangeState(player.jumpState);
         }
 
+        //=======================攻击状态切换=======================      
         if (player.OnIsAttackRequest()) 
         {
-            player.OnAttackInputConsume();
+            player.OnAttackInputConsume();//消费掉攻击输入  
             stateMachine.OnChangeState(player.attackState);
         }
     }

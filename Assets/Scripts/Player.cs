@@ -34,6 +34,7 @@ public class Player : MonoBehaviour
     public float gravityChangeSpeed = 2f; //重力变化量
 
     public float attackBufferDuration = 0.8f; //攻击缓冲时间
+    public int comboIndex = 0; //连击索引 0表示没有连击 1表示一段攻击 2表示二段攻击
 
     public GameObject groundCheckObject; //用于做地面检测的物体
     public LayerMask groundLayer;
@@ -71,6 +72,8 @@ public class Player : MonoBehaviour
 
     void Update()
     {
+        stateMachine.CurrentState.OnUpdate();
+
         inputDirection = (int)Input.GetAxisRaw("Horizontal");
 
         if (Input.GetKeyDown(KeyCode.J))        //跳跃按下
@@ -94,8 +97,6 @@ public class Player : MonoBehaviour
             isPendingAttackInput = true;       //对攻击输入进行“记账”也就是挂起
         }
 
-        stateMachine.CurrentState.OnUpdate();
-
     }
 
 
@@ -111,10 +112,11 @@ public class Player : MonoBehaviour
 
 
 
-    public bool OnIsCanFlip() //是否能翻转
-    {
-        return (inputDirection != 0 && inputDirection != currentDirection);
-    }
+    /// <summary>   
+    /// //是否能翻转
+    /// <summary>   
+    /// <returns></returns> 
+    public bool OnIsCanFlip() => (inputDirection != 0 && inputDirection != currentDirection);
 
 
 
@@ -195,6 +197,22 @@ public class Player : MonoBehaviour
     {
         animator.Play(actionName , targetActionLayer);
         animator.speed = 1;
+    }
+
+
+
+    /// <summary>
+    /// 是否在连击窗口内
+    /// </summary>
+    /// <param name="startTime">窗口开始时间</param>
+    /// <param name="endTime">窗口结束时间</param>
+    /// <param name="actionName">攻击动画的名字</param>
+    /// <param name="targetActionLayer">攻击动画所在动画层级</param>
+    /// <returns></returns>
+    public bool OnIsComboWindow(int actionName , int targetActionLayer , float startTime , float endTime)
+    {
+        AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(targetActionLayer);  
+        return info.shortNameHash== actionName && info.normalizedTime >= startTime && info.normalizedTime <= endTime;
     }
 
 
