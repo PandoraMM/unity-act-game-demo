@@ -13,6 +13,7 @@ public struct ComboStep
     public int   animLayer;            //攻击动画所在动画层级
     public float comboWindowStartTime; //连击输入窗口开始时间
     public float comboWindowEndTime;   //连击输入窗口结束时间
+    public bool isCanBeInterrupted;    //该段攻击是否可以被打断
 }
 
 
@@ -28,14 +29,16 @@ public class AttackState : FSMState
             animShortHashName = AnimClips.actionAttack1, 
             animLayer = AnimClips.baseLayer,
             comboWindowStartTime = 0.65f, 
-            comboWindowEndTime = 0.98f 
+            comboWindowEndTime = 0.98f,
+            isCanBeInterrupted = true 
             },
         new ComboStep //第二段攻击数据
         {
             animShortHashName = AnimClips.actionAttack2, 
             animLayer = AnimClips.baseLayer,
             comboWindowStartTime = 0f, 
-            comboWindowEndTime = 0f 
+            comboWindowEndTime = 0f, 
+            isCanBeInterrupted = false 
             },
     };  
 
@@ -52,7 +55,7 @@ public class AttackState : FSMState
         base.OnEnter();
 
         player.comboIndex=1; //进入攻击状态时，连击索引设为1，表示第一段攻击       
-        player.OnPlayeAnimation(AnimClips.actionAttack1, AnimClips.baseLayer);
+        player.OnPlayAnimation(AnimClips.actionAttack1, AnimClips.baseLayer);
 
     }
 
@@ -70,10 +73,19 @@ public class AttackState : FSMState
             OnPlayComboAction();
         }
 
+        if (player.OnIsPendingJumpInput())//攻击状态被跳跃意图打断
+        {
+            if(OnIsCanBeInterruptedBy(FSMStateIntention.Jump))
+            {
+                OnRestComboIndex();
+                player.OnJumpInputConsume(); //消费掉跳跃输入
+                stateMachine.OnChangeState(player.jumpState);
+            }       
+        }
+
         if (OnIsComboActionFinished()) 
         {
             OnRestComboIndex();
-
             if (player.OnIsCanFlip()) { player.OnFlip(); }
 
             if (player.inputDirection == 0)
@@ -110,7 +122,7 @@ public class AttackState : FSMState
     public void OnPlayComboAction()
     {
         var attackStep = comboSteps[OnGetCurrentComboIndex()];
-        player.OnPlayeAnimation(attackStep.animShortHashName, attackStep.animLayer);
+        player.OnPlayAnimation(attackStep.animShortHashName, attackStep.animLayer);
     }
 
 
@@ -134,8 +146,22 @@ public class AttackState : FSMState
     public bool OnIsInAttackActionWindow()
     {
         var attackStep = comboSteps[OnGetCurrentComboIndex()];
-        return player.OnIsComboWindow(attackStep.animShortHashName, attackStep.animLayer, attackStep.comboWindowStartTime, attackStep.comboWindowEndTime);
+        return player.OnIsInActionWindow(attackStep.animShortHashName, attackStep.animLayer, attackStep.comboWindowStartTime, attackStep.comboWindowEndTime);
     }
+
+
+
+    /// <summary>
+    /// 判断：当前攻击动作是否可以被打断        
+    /// </summary>
+    /// <returns></returns>
+    public bool OnIsCanBeInterruptedBy(FSMStateIntention intentionType)
+    {
+        var attackStep = comboSteps[OnGetCurrentComboIndex()];
+        if(player.comboIndex == 0 || player.comboIndex >= comboSteps.Length) return false;
+        if(attackStep.isCanBeInterrupted == false)return false;
+        return intentionType == FSMStateIntention.Jump;
+    }   
 
 
 
@@ -151,5 +177,8 @@ public class AttackState : FSMState
     /// 重置连击索引
     /// </summary>
     public void OnRestComboIndex() => player.comboIndex = 0;    
+    
+
+
 
 }

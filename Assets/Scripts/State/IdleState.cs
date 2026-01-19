@@ -15,7 +15,7 @@ public class IdleState : GroundState
         base.OnEnter();
         Debug.Log("进入待机状态");
 
-        player.OnPlayeAnimation(AnimClips.actionIdle, AnimClips.baseLayer);
+        player.OnPlayAnimation(AnimClips.actionIdle, AnimClips.baseLayer);
     }
 
     public override void OnExit()

@@ -41,6 +41,7 @@ public class Player : MonoBehaviour
     public float groundCheckRadius; //检测球的半径范围
 
     private bool isPendingAttackInput; //挂起攻击输入的判定（可理解为记账）
+    private bool isPendingJumpInput; //挂起跳跃输入的判定
     private int currentDirection = 1; //当前角色的面朝向
     private float lastGroundTime = -999f;  //记录上一次落地时间
     private float lastJumpInputTime = -999f;  //记录上一次按下跳跃的时间
@@ -80,11 +81,13 @@ public class Player : MonoBehaviour
         {
             isJumpInputHold = true;
             lastJumpInputTime = Time.time;
+            isPendingJumpInput = true;      //对跳跃输入进行挂起
         }
 
         if (Input.GetKey(KeyCode.J))           //跳跃持续按下
         {
             isJumpInputHold = true;
+
         } 
         else if (Input.GetKeyUp(KeyCode.J))    //跳跃松开
         {
@@ -144,6 +147,24 @@ public class Player : MonoBehaviour
 
 
     /// <summary>
+    /// 跳跃挂起讯号
+    /// </summary>
+    /// <returns></returns>
+    public bool OnIsPendingJumpInput() => isPendingJumpInput;       
+
+
+
+    /// <summary>
+    /// 消费跳跃挂起
+    /// </summary>
+    public void OnJumpInputConsume() 
+    {
+        isPendingJumpInput = false; //消费掉跳跃输入的挂起行为
+    }
+
+
+
+    /// <summary>
     /// 攻击请求
     /// </summary>
     /// <returns></returns>
@@ -193,7 +214,7 @@ public class Player : MonoBehaviour
     /// </summary>
     /// <param name="actionName"></param>
     /// <param name="targetActionLayer"></param>
-    public void OnPlayeAnimation(int actionName, int targetActionLayer) 
+    public void OnPlayAnimation(int actionName, int targetActionLayer) 
     {
         animator.Play(actionName , targetActionLayer);
         animator.speed = 1;
@@ -202,14 +223,14 @@ public class Player : MonoBehaviour
 
 
     /// <summary>
-    /// 是否在连击窗口内
+    /// 是否在动作窗口内（我现在理解这个函数不仅仅用于连击的时间窗口判断，还可以用于打断的时间窗口判断）
     /// </summary>
     /// <param name="startTime">窗口开始时间</param>
     /// <param name="endTime">窗口结束时间</param>
     /// <param name="actionName">攻击动画的名字</param>
     /// <param name="targetActionLayer">攻击动画所在动画层级</param>
     /// <returns></returns>
-    public bool OnIsComboWindow(int actionName , int targetActionLayer , float startTime , float endTime)
+    public bool OnIsInActionWindow(int actionName , int targetActionLayer , float startTime , float endTime)
     {
         AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(targetActionLayer);  
         return info.shortNameHash== actionName && info.normalizedTime >= startTime && info.normalizedTime <= endTime;

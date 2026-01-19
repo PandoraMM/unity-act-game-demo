@@ -24,6 +24,7 @@ public class GroundState : FSMState
         //=======================跳跃状态切换=======================
         if (player.OnIsCanJump() && player.OnIsCoyoteTime())
         {
+            player.OnJumpInputConsume(); //消费掉跳跃输入
             stateMachine.OnChangeState(player.jumpState);
         }
 
