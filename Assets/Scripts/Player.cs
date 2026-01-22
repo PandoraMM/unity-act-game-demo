@@ -81,7 +81,7 @@ public class Player : MonoBehaviour
         {
             isJumpInputHold = true;
             lastJumpInputTime = Time.time;
-            isPendingJumpInput = true;      //对跳跃输入进行挂起
+            isPendingJumpInput = true;         //对跳跃输入进行挂起
         }
 
         if (Input.GetKey(KeyCode.J))           //跳跃持续按下
@@ -108,7 +108,7 @@ public class Player : MonoBehaviour
     {
         isOnGround = Physics2D.OverlapCircle(groundCheckObject.transform.position, groundCheckRadius, groundLayer); //判断物体是不是在地面上
 
-        if (isOnGround) { lastGroundTime = Time.time; }
+        if (isOnGround) { lastGroundTime = Time.time; } //记录上一次落地的时间，用于做土狼时间的时间判断依据
 
         stateMachine.CurrentState.OnFixedUpdate();
     }
@@ -116,13 +116,16 @@ public class Player : MonoBehaviour
 
 
     /// <summary>   
-    /// //是否能翻转
-    /// <summary>   
+    /// 判断：角色是否能翻转
+    /// </summary>   
     /// <returns></returns> 
     public bool OnIsCanFlip() => (inputDirection != 0 && inputDirection != currentDirection);
 
 
 
+    /// <summary>
+    /// 翻转角色朝向
+    /// </summary>
     public void OnFlip()         
     {
         currentDirection = currentDirection * -1;
@@ -131,6 +134,9 @@ public class Player : MonoBehaviour
 
 
 
+    /// <summary>
+    /// 角色跳跃
+    /// </summary>
     public void OnJump()
     {
         RB2D.linearVelocity = new Vector2(RB2D.linearVelocity.x, jumpSpeed);
@@ -193,6 +199,34 @@ public class Player : MonoBehaviour
 
 
     /// <summary>
+    /// 播放动画
+    /// </summary>
+    /// <param name="actionName"></param>
+    /// <param name="targetActionLayer"></param>
+    public void OnPlayAnimation(int actionName, int targetActionLayer) 
+    {
+        animator.Play(actionName , targetActionLayer);
+        animator.speed = 1;
+    }
+
+
+
+    /// <summary>
+    /// 获取当前动画的归一化时间
+    /// </summary>
+    /// <param name="actionName"></param>
+    /// <param name="targetActionLayer"></param>
+    /// <returns></returns>
+    public float OnCurrentAtionNormalizedTime(int actionName, int targetActionLayer) 
+    {
+        AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(targetActionLayer);
+        if (info.shortNameHash == actionName) return info.normalizedTime;
+        return 0f;
+    }
+
+
+
+    /// <summary>
     /// 检查当前动画是否播放完成    
     /// </summary>
     /// <param name="actionName"></param>
@@ -205,19 +239,6 @@ public class Player : MonoBehaviour
         AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(targetActionLayer);
 
         return info.shortNameHash == actionName && info.normalizedTime >= 0.98f;
-    }
-
-
-
-    /// <summary>
-    /// 播放动画
-    /// </summary>
-    /// <param name="actionName"></param>
-    /// <param name="targetActionLayer"></param>
-    public void OnPlayAnimation(int actionName, int targetActionLayer) 
-    {
-        animator.Play(actionName , targetActionLayer);
-        animator.speed = 1;
     }
 
 

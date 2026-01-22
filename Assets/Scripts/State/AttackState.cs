@@ -75,7 +75,7 @@ public class AttackState : FSMState
 
         if (player.OnIsPendingJumpInput())//攻击状态被跳跃意图打断
         {
-            if(OnIsCanBeInterruptedBy(FSMStateIntention.Jump))
+            if(OnIsCanBeInterruptedBy(StateIntention.Jump))
             {
                 OnRestComboIndex();
                 player.OnJumpInputConsume(); //消费掉跳跃输入
@@ -155,12 +155,12 @@ public class AttackState : FSMState
     /// 判断：当前攻击动作是否可以被打断        
     /// </summary>
     /// <returns></returns>
-    public bool OnIsCanBeInterruptedBy(FSMStateIntention intentionType)
+    public bool OnIsCanBeInterruptedBy(StateIntention intentionType)
     {
         var attackStep = comboSteps[OnGetCurrentComboIndex()];
-        if(player.comboIndex == 0 || player.comboIndex >= comboSteps.Length) return false;
-        if(attackStep.isCanBeInterrupted == false)return false;
-        return intentionType == FSMStateIntention.Jump;
+        if(player.comboIndex == 0 || player.comboIndex >= comboSteps.Length) return false; //索引边界判断，如果越界返回false    
+        if(attackStep.isCanBeInterrupted == false)return false;                            //数据判断，如果该段攻击不允许被打断则返回false
+        return intentionType == StateIntention.Jump;                                       //目前只允许跳跃意图打断攻击
     }   
 
 
