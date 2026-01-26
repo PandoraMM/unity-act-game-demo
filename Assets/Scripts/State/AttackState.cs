@@ -11,8 +11,10 @@ public struct ComboStep
 {
     public int   animShortHashName;    //攻击动画名字的哈希值
     public int   animLayer;            //攻击动画所在动画层级
-    public float comboWindowStartTime; //连击输入窗口开始时间
-    public float comboWindowEndTime;   //连击输入窗口结束时间
+    public float comboWindowEnd;       //连击输入窗口结束时间
+    public float preAttackEnd;         //前摇结束时间
+    public float attackingEnd;         //攻击中结束时间
+    public float postAttackEnd;        //后摇结束时间
     public bool isCanBeInterrupted;    //该段攻击是否可以被打断
 }
 
@@ -30,16 +32,20 @@ public class AttackState : FSMState
         { 
             animShortHashName = AnimClips.actionAttack1, 
             animLayer = AnimClips.baseLayer,
-            comboWindowStartTime = 0.65f, 
-            comboWindowEndTime = 0.98f,
+            comboWindowEnd = 0.9f,
+            preAttackEnd   = 0.167f,
+            attackingEnd   = 0.667f,
+            postAttackEnd  = 0.98f, 
             isCanBeInterrupted = true 
             },
         new ComboStep //第二段攻击数据
         {
             animShortHashName = AnimClips.actionAttack2, 
             animLayer = AnimClips.baseLayer,
-            comboWindowStartTime = 0f, 
-            comboWindowEndTime = 0f, 
+            comboWindowEnd = 0f, 
+            preAttackEnd   = 0.4f,
+            attackingEnd   = 0.9f,
+            postAttackEnd  = 0.98f, 
             isCanBeInterrupted = false 
             },
     };  
@@ -148,26 +154,40 @@ public class AttackState : FSMState
     public void UpdateAttackStage()
     {
         var attackStep = comboSteps[GetCurrentComboIndex()];
-        if(player.CurrentActionNormalizedTime(AnimClips.actionAttack1) > 0f && player.CurrentActionNormalizedTime(AnimClips.actionAttack1) < 0.3f)//前摇
+        if(player.CurrentActionNormalizedTime(attackStep.animShortHashName) > 0f && player.CurrentActionNormalizedTime(attackStep.animShortHashName) < attackStep.preAttackEnd)//前摇
         {
-            Debug.Log("攻击前摇阶段");  
             currentAttackStage = AttackStage.PreAttack;
         }
-        else if(player.CurrentActionNormalizedTime(AnimClips.actionAttack1) < 0.7f)//攻击
+        else if(player.CurrentActionNormalizedTime(attackStep.animShortHashName) < attackStep.attackingEnd)//攻击
         {
-            Debug.Log("攻击阶段");  
             currentAttackStage = AttackStage.Attacking;
         }
-        else if(player.CurrentActionNormalizedTime(AnimClips.actionAttack1) <= 1f)//后摇    
+        else if(player.CurrentActionNormalizedTime(attackStep.animShortHashName) <= attackStep.postAttackEnd)//后摇    
         {
-            Debug.Log("攻击后摇阶段");  
             currentAttackStage = AttackStage.PostAttack;
         }else
         {
-            Debug.Log("未在攻击阶段中");  
             currentAttackStage = AttackStage.None;  
         }
     }
+
+
+
+    /// <summary>
+    /// 是否在攻击窗口内
+    /// </summary>
+    /// <param name="actionName">攻击动画的名字</param>
+    /// <param name="targetActionLayer">攻击动画所在动画层级</param>
+    /// <param name="tempStage">攻击阶段枚举</param>
+    /// <param name="endTime">窗口结束时间</param>
+    /// <returns></returns>
+    public bool IsInAttackWindow(int actionName , int targetActionLayer , AttackStage tempStage , float endTime)
+    {
+        AnimatorStateInfo info = player.animator.GetCurrentAnimatorStateInfo(targetActionLayer);  
+        Debug.Log("当前状态 " + currentAttackStage + "   " + "临存状态 "+ tempStage);
+        return info.shortNameHash== actionName && tempStage == currentAttackStage && info.normalizedTime <= endTime;
+    }
+
 
 
     /// <summary>
@@ -177,7 +197,7 @@ public class AttackState : FSMState
     public bool IsInAttackActionWindow()
     {
         var attackStep = comboSteps[GetCurrentComboIndex()];
-        return player.OnIsInActionWindow(attackStep.animShortHashName, attackStep.animLayer, attackStep.comboWindowStartTime, attackStep.comboWindowEndTime);
+        return IsInAttackWindow(attackStep.animShortHashName, attackStep.animLayer, AttackStage.PostAttack , attackStep.comboWindowEnd);
     }
 
 
