@@ -21,6 +21,8 @@ public struct ComboStep
 public class AttackState : FSMState
 {
 
+    public AttackStage currentAttackStage; //当前攻击阶段   
+
     //连击步骤数据数组：以结构体作为数组类型，存储数据
     public ComboStep[] comboSteps = new ComboStep[]
     {
@@ -64,28 +66,28 @@ public class AttackState : FSMState
     public override void OnUpdate()
     {
         base.OnUpdate();
-
-        if(OnIsInAttackActionWindow() && player.OnIsAttackRequest())//检测到处于连击输入窗口内且有攻击输入请求  
+        UpdateAttackStage();//测试==当前攻击阶段
+        if(IsInAttackActionWindow() && player.OnIsAttackRequest())//检测到处于连击输入窗口内且有攻击输入请求  
         {
             player.OnAttackInputConsume();//消费掉攻击输入
-            if(player.comboIndex >= comboSteps.Length){ OnRestComboIndex(); }//索引边界判断
+            if(player.comboIndex >= comboSteps.Length){ RestComboIndex(); }//索引边界判断
             player.comboIndex++;
-            OnPlayComboAction();
+            PlayComboAction();
         }
 
         if (player.OnIsPendingJumpInput())//攻击状态被跳跃意图打断
         {
-            if(OnIsCanBeInterruptedBy(StateIntention.Jump))
+            if(IsCanBeInterruptedBy(StateIntention.Jump))
             {
-                OnRestComboIndex();
+                RestComboIndex();
                 player.OnJumpInputConsume(); //消费掉跳跃输入
                 stateMachine.OnChangeState(player.jumpState);
             }       
         }
 
-        if (OnIsComboActionFinished()) 
+        if (IsComboActionFinished()) //当前连击动作播放完毕
         {
-            OnRestComboIndex();
+            RestComboIndex();
             if (player.OnIsCanFlip()) { player.OnFlip(); }
 
             if (player.inputDirection == 0)
@@ -112,6 +114,7 @@ public class AttackState : FSMState
     public override void OnExit()
     {
         base.OnExit();
+        currentAttackStage = AttackStage.None;  
     }
 
 
@@ -119,9 +122,9 @@ public class AttackState : FSMState
     /// <summary>
     /// 播放连击动作
     /// </summary>
-    public void OnPlayComboAction()
+    public void PlayComboAction()
     {
-        var attackStep = comboSteps[OnGetCurrentComboIndex()];
+        var attackStep = comboSteps[GetCurrentComboIndex()];
         player.OnPlayAnimation(attackStep.animShortHashName, attackStep.animLayer);
     }
 
@@ -131,21 +134,49 @@ public class AttackState : FSMState
     /// 判断：当前连击动作是否播放完毕
     /// </summary>
     /// <returns></returns>
-    public bool OnIsComboActionFinished()
+    public bool IsComboActionFinished()
     {
-        var attackStep = comboSteps[OnGetCurrentComboIndex()];
+        var attackStep = comboSteps[GetCurrentComboIndex()];
         return player.IsCurrentActionFinished(attackStep.animShortHashName, attackStep.animLayer);
     }
 
+
+    
+    /// <summary>
+    /// 更新攻击阶段：这个方法很重要，用来检测当前处于攻击的哪个阶段
+    /// </summary>
+    public void UpdateAttackStage()
+    {
+        var attackStep = comboSteps[GetCurrentComboIndex()];
+        if(player.CurrentActionNormalizedTime(AnimClips.actionAttack1) > 0f && player.CurrentActionNormalizedTime(AnimClips.actionAttack1) < 0.3f)//前摇
+        {
+            Debug.Log("攻击前摇阶段");  
+            currentAttackStage = AttackStage.PreAttack;
+        }
+        else if(player.CurrentActionNormalizedTime(AnimClips.actionAttack1) < 0.7f)//攻击
+        {
+            Debug.Log("攻击阶段");  
+            currentAttackStage = AttackStage.Attacking;
+        }
+        else if(player.CurrentActionNormalizedTime(AnimClips.actionAttack1) <= 1f)//后摇    
+        {
+            Debug.Log("攻击后摇阶段");  
+            currentAttackStage = AttackStage.PostAttack;
+        }else
+        {
+            Debug.Log("未在攻击阶段中");  
+            currentAttackStage = AttackStage.None;  
+        }
+    }
 
 
     /// <summary>
     /// 判断：是否处于连击输入窗口内  
     /// </summary>
     /// <returns></returns>
-    public bool OnIsInAttackActionWindow()
+    public bool IsInAttackActionWindow()
     {
-        var attackStep = comboSteps[OnGetCurrentComboIndex()];
+        var attackStep = comboSteps[GetCurrentComboIndex()];
         return player.OnIsInActionWindow(attackStep.animShortHashName, attackStep.animLayer, attackStep.comboWindowStartTime, attackStep.comboWindowEndTime);
     }
 
@@ -155,9 +186,9 @@ public class AttackState : FSMState
     /// 判断：当前攻击动作是否可以被打断        
     /// </summary>
     /// <returns></returns>
-    public bool OnIsCanBeInterruptedBy(StateIntention intentionType)
+    public bool IsCanBeInterruptedBy(StateIntention intentionType)
     {
-        var attackStep = comboSteps[OnGetCurrentComboIndex()];
+        var attackStep = comboSteps[GetCurrentComboIndex()];
         if(player.comboIndex == 0 || player.comboIndex >= comboSteps.Length) return false; //索引边界判断，如果越界返回false    
         if(attackStep.isCanBeInterrupted == false)return false;                            //数据判断，如果该段攻击不允许被打断则返回false
         return intentionType == StateIntention.Jump;                                       //目前只允许跳跃意图打断攻击
@@ -169,14 +200,14 @@ public class AttackState : FSMState
     /// 获取当前连击索引(消除魔法数字)    
     /// </summary>
     /// <returns></returns>
-    public int OnGetCurrentComboIndex() => player.comboIndex-1;
+    public int GetCurrentComboIndex() => player.comboIndex-1;
 
 
 
     /// <summary>
     /// 重置连击索引
     /// </summary>
-    public void OnRestComboIndex() => player.comboIndex = 0;    
+    public void RestComboIndex() => player.comboIndex = 0;    
     
 
 

@@ -215,12 +215,15 @@ public class Player : MonoBehaviour
     /// 获取当前动画的归一化时间
     /// </summary>
     /// <param name="actionName"></param>
-    /// <param name="targetActionLayer"></param>
+    /// <param name="targetActionLayer">动画层级，给一个缺省值，表示基础层级，可以不写</param>
     /// <returns></returns>
-    public float OnCurrentAtionNormalizedTime(int actionName, int targetActionLayer) 
+    public float CurrentActionNormalizedTime(int actionName, int targetActionLayer = 0) 
     {
         AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(targetActionLayer);
-        if (info.shortNameHash == actionName) return info.normalizedTime;
+        if (info.shortNameHash == actionName) 
+        {
+            return info.normalizedTime;
+        }
         return 0f;
     }
 

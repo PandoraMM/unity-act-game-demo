@@ -42,8 +42,13 @@ public class PlayerDebug : MonoBehaviour
     {
         if (player == null) return;
 
-        GUI.Label(new Rect(10, 10, 1920, 600), $"State: {player.stateMachine.CurrentState.GetType().Name}");
+
         GUI.skin.label.fontSize = 100;
+        GUI.Label(new Rect(10, 10, 1920, 600), $"State: {player.stateMachine.CurrentState.GetType().Name}");
+
+        GUI.skin.label.fontSize = 30;
+        GUI.Label(new Rect(10, 110, 1920, 600), $"State: {player.attackState.currentAttackStage}");
+
 
     }
 

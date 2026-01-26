@@ -21,6 +21,7 @@ public enum StateIntention
 /// </summary>
 public enum AttackStage
 {
+    None,      //无阶段
     PreAttack, //前摇阶段
     Attacking, //攻击阶段
     PostAttack,//后摇阶段
