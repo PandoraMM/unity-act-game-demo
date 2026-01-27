@@ -203,7 +203,7 @@ public class Player : MonoBehaviour
     /// </summary>
     /// <param name="actionName"></param>
     /// <param name="targetActionLayer"></param>
-    public void OnPlayAnimation(int actionName, int targetActionLayer) 
+    public void OnPlayAnimation(int actionName, int targetActionLayer = 0) 
     {
         animator.Play(actionName , targetActionLayer);
         animator.speed = 1;
@@ -214,17 +214,20 @@ public class Player : MonoBehaviour
     /// <summary>
     /// 获取当前动画的归一化时间
     /// </summary>
-    /// <param name="actionName"></param>
-    /// <param name="targetActionLayer">动画层级，给一个缺省值，表示基础层级，可以不写</param>
+    /// <param name="actionName">动画的名字</param>
+    /// <param name="normalizedTime">out参数，返回当前动画的归一化时间</param>
+    /// <param name="targetActionLayer">动画层级，给一个缺省值，表示基础层级，如果没有特殊层级变化，可以不写</param>
     /// <returns></returns>
-    public float CurrentActionNormalizedTime(int actionName, int targetActionLayer = 0) 
+    public bool TryGetActionNormalizedTime(int actionName, out float normalizedTime , int targetActionLayer = 0) 
     {
         AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(targetActionLayer);
         if (info.shortNameHash == actionName) 
         {
-            return info.normalizedTime;
+            normalizedTime = info.normalizedTime;
+            return true;
         }
-        return 0f;
+        normalizedTime = 0;
+        return false;
     }
 
 
@@ -235,29 +238,13 @@ public class Player : MonoBehaviour
     /// <param name="actionName"></param>
     /// <param name="targetActionLayer"></param>
     /// <returns></returns>
-    public bool IsCurrentActionFinished(int actionName, int targetActionLayer) 
+    public bool IsCurrentActionFinished(int actionName, int targetActionLayer = 0) 
     {
         if (animator.IsInTransition(targetActionLayer)) return false;
 
         AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(targetActionLayer);
 
         return info.shortNameHash == actionName && info.normalizedTime >= 0.98f;
-    }
-
-
-
-    /// <summary>
-    /// 是否在动作窗口内（我现在理解这个函数不仅仅用于连击的时间窗口判断，还可以用于打断的时间窗口判断）
-    /// </summary>
-    /// <param name="startTime">窗口开始时间</param>
-    /// <param name="endTime">窗口结束时间</param>
-    /// <param name="actionName">攻击动画的名字</param>
-    /// <param name="targetActionLayer">攻击动画所在动画层级</param>
-    /// <returns></returns>
-    public bool OnIsInActionWindow(int actionName , int targetActionLayer , float startTime , float endTime)
-    {
-        AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(targetActionLayer);  
-        return info.shortNameHash== actionName && info.normalizedTime >= startTime && info.normalizedTime <= endTime;
     }
 
 

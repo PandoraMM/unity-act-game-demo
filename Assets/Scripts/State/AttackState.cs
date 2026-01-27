@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Mono.Cecil.Cil;
 using UnityEngine;
 
 
@@ -22,8 +23,6 @@ public struct ComboStep
 
 public class AttackState : FSMState
 {
-
-    public AttackStage currentAttackStage; //当前攻击阶段   
 
     //连击步骤数据数组：以结构体作为数组类型，存储数据
     public ComboStep[] comboSteps = new ComboStep[]
@@ -72,7 +71,7 @@ public class AttackState : FSMState
     public override void OnUpdate()
     {
         base.OnUpdate();
-        UpdateAttackStage();//测试==当前攻击阶段
+
         if(IsInAttackActionWindow() && player.OnIsAttackRequest())//检测到处于连击输入窗口内且有攻击输入请求  
         {
             player.OnAttackInputConsume();//消费掉攻击输入
@@ -120,7 +119,6 @@ public class AttackState : FSMState
     public override void OnExit()
     {
         base.OnExit();
-        currentAttackStage = AttackStage.None;  
     }
 
 
@@ -151,24 +149,17 @@ public class AttackState : FSMState
     /// <summary>
     /// 更新攻击阶段：这个方法很重要，用来检测当前处于攻击的哪个阶段
     /// </summary>
-    public void UpdateAttackStage()
+    public AttackStage GetAttackStage()
     {
-        var attackStep = comboSteps[GetCurrentComboIndex()];
-        if(player.CurrentActionNormalizedTime(attackStep.animShortHashName) > 0f && player.CurrentActionNormalizedTime(attackStep.animShortHashName) < attackStep.preAttackEnd)//前摇
-        {
-            currentAttackStage = AttackStage.PreAttack;
-        }
-        else if(player.CurrentActionNormalizedTime(attackStep.animShortHashName) < attackStep.attackingEnd)//攻击
-        {
-            currentAttackStage = AttackStage.Attacking;
-        }
-        else if(player.CurrentActionNormalizedTime(attackStep.animShortHashName) <= attackStep.postAttackEnd)//后摇    
-        {
-            currentAttackStage = AttackStage.PostAttack;
-        }else
-        {
-            currentAttackStage = AttackStage.None;  
-        }
+        if(player.comboIndex == 0 || player.comboIndex >= comboSteps.Length) {return AttackStage.None;}
+        var attackStep = comboSteps[GetCurrentComboIndex()]; 
+        if(!player.TryGetActionNormalizedTime(attackStep.animShortHashName, out var t, attackStep.animLayer)){return AttackStage.None;}//获取当前动画归一化时间失败，返回None
+
+        if     (t < attackStep.preAttackEnd)   {return AttackStage.PreAttack; } //前摇阶段
+        else if(t < attackStep.attackingEnd)   {return AttackStage.Attacking; } //攻击阶段
+        else if(t <= attackStep.postAttackEnd) {return AttackStage.PostAttack;} //后摇阶段 
+
+        return AttackStage.None; //都不是则返回None 
     }
 
 
@@ -184,8 +175,8 @@ public class AttackState : FSMState
     public bool IsInAttackWindow(int actionName , int targetActionLayer , AttackStage tempStage , float endTime)
     {
         AnimatorStateInfo info = player.animator.GetCurrentAnimatorStateInfo(targetActionLayer);  
-        Debug.Log("当前状态 " + currentAttackStage + "   " + "临存状态 "+ tempStage);
-        return info.shortNameHash== actionName && tempStage == currentAttackStage && info.normalizedTime <= endTime;
+        Debug.Log("当前状态 " + GetAttackStage() + "   " + "临存状态 "+ tempStage);
+        return info.shortNameHash== actionName && tempStage == GetAttackStage() && info.normalizedTime <= endTime;
     }
 
 
