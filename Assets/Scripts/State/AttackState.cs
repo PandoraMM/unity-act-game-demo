@@ -72,7 +72,7 @@ public class AttackState : FSMState
     {
         base.OnUpdate();
 
-        if(IsInAttackActionWindow() && player.OnIsAttackRequest())//检测到处于连击输入窗口内且有攻击输入请求  
+        if(IsInComboWindow() && player.OnIsAttackRequest())//检测到处于连击输入窗口内且有攻击输入请求  
         {
             player.OnAttackInputConsume();//消费掉攻击输入
             if(player.comboIndex >= comboSteps.Length){ RestComboIndex(); }//索引边界判断
@@ -174,9 +174,7 @@ public class AttackState : FSMState
     /// <returns></returns>
     public bool IsInAttackWindow(int actionName , int targetActionLayer , AttackStage tempStage , float endTime)
     {
-        AnimatorStateInfo info = player.animator.GetCurrentAnimatorStateInfo(targetActionLayer);  
-        Debug.Log("当前状态 " + GetAttackStage() + "   " + "临存状态 "+ tempStage);
-        return info.shortNameHash== actionName && tempStage == GetAttackStage() && info.normalizedTime <= endTime;
+        return player.TryGetActionNormalizedTime(actionName, out var t , targetActionLayer) && t <= endTime && tempStage == GetAttackStage();
     }
 
 
@@ -185,7 +183,7 @@ public class AttackState : FSMState
     /// 判断：是否处于连击输入窗口内  
     /// </summary>
     /// <returns></returns>
-    public bool IsInAttackActionWindow()
+    public bool IsInComboWindow()
     {
         var attackStep = comboSteps[GetCurrentComboIndex()];
         return IsInAttackWindow(attackStep.animShortHashName, attackStep.animLayer, AttackStage.PostAttack , attackStep.comboWindowEnd);

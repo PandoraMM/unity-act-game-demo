@@ -242,9 +242,7 @@ public class Player : MonoBehaviour
     {
         if (animator.IsInTransition(targetActionLayer)) return false;
 
-        AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(targetActionLayer);
-
-        return info.shortNameHash == actionName && info.normalizedTime >= 0.98f;
+        return TryGetActionNormalizedTime(actionName, out var t , targetActionLayer) && t >= 0.98f;    
     }
 
 
