@@ -8,6 +8,7 @@ using UnityEngine;
 /// </summary>
 public enum StateIntention
 {
+    None,
     Idle,
     Move,
     Jump,

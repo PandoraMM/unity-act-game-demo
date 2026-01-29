@@ -82,7 +82,7 @@ public class AttackState : FSMState
 
         if (player.OnIsPendingJumpInput())//攻击状态被跳跃意图打断
         {
-            if(IsCanBeInterruptedBy(StateIntention.Jump))
+            if(IsCanBeInterruptedBy(StateIntention.Jump, AttackStage.PostAttack) ) //只有在后摇阶段才允许被跳跃意图打断
             {
                 RestComboIndex();
                 player.OnJumpInputConsume(); //消费掉跳跃输入
@@ -119,6 +119,8 @@ public class AttackState : FSMState
     public override void OnExit()
     {
         base.OnExit();
+
+        RestComboIndex();
     }
 
 
@@ -140,6 +142,7 @@ public class AttackState : FSMState
     /// <returns></returns>
     public bool IsComboActionFinished()
     {
+        if(player.comboIndex == 0 || player.comboIndex >= comboSteps.Length) return false;  //索引边界判断，如果越界返回false
         var attackStep = comboSteps[GetCurrentComboIndex()];
         return player.IsCurrentActionFinished(attackStep.animShortHashName, attackStep.animLayer);
     }
@@ -192,16 +195,28 @@ public class AttackState : FSMState
 
 
     /// <summary>
+    /// 攻击动作可被打断的枚举        
+    /// </summary>
+    /// <returns></returns>
+    public StateIntention AttackInterrupted(StateIntention intentionType)
+    {
+
+        if(player.comboIndex == 0 || player.comboIndex >= comboSteps.Length) return StateIntention.None;  //索引边界判断，如果越界返回false    
+        var attackStep = comboSteps[GetCurrentComboIndex()];
+        if(attackStep.isCanBeInterrupted == false) return StateIntention.None;                            //数据判断，如果该段攻击不允许被打断则返回false
+        return intentionType;                                                                             //目前只允许跳跃意图打断攻击
+    }   
+
+
+
+    /// <summary>
     /// 判断：当前攻击动作是否可以被打断        
     /// </summary>
     /// <returns></returns>
-    public bool IsCanBeInterruptedBy(StateIntention intentionType)
+    public bool IsCanBeInterruptedBy(StateIntention intentionType , AttackStage requiredStage)
     {
-        var attackStep = comboSteps[GetCurrentComboIndex()];
-        if(player.comboIndex == 0 || player.comboIndex >= comboSteps.Length) return false; //索引边界判断，如果越界返回false    
-        if(attackStep.isCanBeInterrupted == false)return false;                            //数据判断，如果该段攻击不允许被打断则返回false
-        return intentionType == StateIntention.Jump;                                       //目前只允许跳跃意图打断攻击
-    }   
+        return GetAttackStage() == requiredStage && AttackInterrupted(intentionType) == intentionType;
+    }
 
 
 
