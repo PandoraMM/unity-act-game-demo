@@ -241,7 +241,6 @@ public class Player : MonoBehaviour
     public bool IsCurrentActionFinished(int actionName, int targetActionLayer = 0) 
     {
         if (animator.IsInTransition(targetActionLayer)) return false;
-
         return TryGetActionNormalizedTime(actionName, out var t , targetActionLayer) && t >= 0.98f;    
     }
 

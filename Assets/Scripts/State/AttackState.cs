@@ -62,7 +62,7 @@ public class AttackState : FSMState
         base.OnEnter();
 
         player.comboIndex=1; //进入攻击状态时，连击索引设为1，表示第一段攻击       
-        player.OnPlayAnimation(AnimClips.actionAttack1, AnimClips.baseLayer);
+        PlayComboAction();
 
     }
 
@@ -75,9 +75,10 @@ public class AttackState : FSMState
         if(IsInComboWindow() && player.OnIsAttackRequest())//检测到处于连击输入窗口内且有攻击输入请求  
         {
             player.OnAttackInputConsume();//消费掉攻击输入
-            if(player.comboIndex >= comboSteps.Length){ RestComboIndex(); }//索引边界判断
+            if(player.comboIndex > comboSteps.Length){ RestComboIndex(); }//索引边界判断
             player.comboIndex++;
             PlayComboAction();
+            
         }
 
         if (player.OnIsPendingJumpInput())//攻击状态被跳跃意图打断
@@ -142,7 +143,7 @@ public class AttackState : FSMState
     /// <returns></returns>
     public bool IsComboActionFinished()
     {
-        if(player.comboIndex == 0 || player.comboIndex >= comboSteps.Length) return false;  //索引边界判断，如果越界返回false
+        if(player.comboIndex == 0 || player.comboIndex > comboSteps.Length) return false;  //索引边界判断，如果越界返回false
         var attackStep = comboSteps[GetCurrentComboIndex()];
         return player.IsCurrentActionFinished(attackStep.animShortHashName, attackStep.animLayer);
     }
@@ -154,7 +155,7 @@ public class AttackState : FSMState
     /// </summary>
     public AttackStage GetAttackStage()
     {
-        if(player.comboIndex == 0 || player.comboIndex >= comboSteps.Length) {return AttackStage.None;}
+        if(player.comboIndex == 0 || player.comboIndex > comboSteps.Length) {return AttackStage.None;}
         var attackStep = comboSteps[GetCurrentComboIndex()]; 
         if(!player.TryGetActionNormalizedTime(attackStep.animShortHashName, out var t, attackStep.animLayer)){return AttackStage.None;}//获取当前动画归一化时间失败，返回None
 
@@ -201,7 +202,7 @@ public class AttackState : FSMState
     public StateIntention AttackInterrupted(StateIntention intentionType)
     {
 
-        if(player.comboIndex == 0 || player.comboIndex >= comboSteps.Length) return StateIntention.None;  //索引边界判断，如果越界返回false    
+        if(player.comboIndex == 0 || player.comboIndex > comboSteps.Length) return StateIntention.None;  //索引边界判断，如果越界返回false    
         var attackStep = comboSteps[GetCurrentComboIndex()];
         if(attackStep.isCanBeInterrupted == false) return StateIntention.None;                            //数据判断，如果该段攻击不允许被打断则返回false
         return intentionType;                                                                             //目前只允许跳跃意图打断攻击
