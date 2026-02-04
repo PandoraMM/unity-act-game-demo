@@ -1,10 +1,9 @@
 using UnityEngine;
-/// <summary>
-/// 动作枚举
-/// </summary>
+
+
 
 /// <summary>
-/// 玩家的行为意图的枚举
+/// 玩家行为意图的枚举
 /// </summary>
 public enum StateIntention
 {

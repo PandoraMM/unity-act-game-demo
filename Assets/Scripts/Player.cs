@@ -201,27 +201,27 @@ public class Player : MonoBehaviour
     /// <summary>
     /// 播放动画
     /// </summary>
-    /// <param name="actionName"></param>
-    /// <param name="targetActionLayer"></param>
-    public void OnPlayAnimation(int actionName, int targetActionLayer = 0) 
+    /// <param name="animName"></param>
+    /// <param name="animLayer"></param>
+    public void PlayAnimation(int animName, int animLayer = 0) 
     {
-        animator.Play(actionName , targetActionLayer);
+        animator.Play(animName , animLayer);
         animator.speed = 1;
     }
 
 
 
     /// <summary>
-    /// 获取当前动画的归一化时间
+    /// 判断：获取当前动画的归一化时间，既可以判断动画名字是否匹配，也可以获取当前动画的归一化时间
     /// </summary>
-    /// <param name="actionName">动画的名字</param>
+    /// <param name="animName">动画的名字</param>
     /// <param name="normalizedTime">out参数，返回当前动画的归一化时间</param>
-    /// <param name="targetActionLayer">动画层级，给一个缺省值，表示基础层级，如果没有特殊层级变化，可以不写</param>
+    /// <param name="animLayer">动画层级，给一个缺省值，表示基础层级，如果没有特殊层级变化，可以不写</param>
     /// <returns></returns>
-    public bool TryGetAnimationNormalizedTime(int actionName, out float normalizedTime , int targetActionLayer = 0) 
+    public bool TryGetNormalizedTimeOfAnimation(int animName, out float normalizedTime , int animLayer = 0) 
     {
-        AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(targetActionLayer);
-        if (info.shortNameHash == actionName) 
+        AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(animLayer);
+        if (info.shortNameHash == animName) 
         {
             normalizedTime = info.normalizedTime;
             return true;
@@ -235,13 +235,13 @@ public class Player : MonoBehaviour
     /// <summary>
     /// 检查当前动画是否播放完成    
     /// </summary>
-    /// <param name="actionName"></param>
-    /// <param name="targetActionLayer"></param>
+    /// <param name="animName"></param>
+    /// <param name="animLayer"></param>
     /// <returns></returns>
-    public bool IsAnimationLoopComplete(int actionName, int targetActionLayer = 0) 
+    public bool IsAnimationComplete(int animName, int animLayer = 0) 
     {
-        if (animator.IsInTransition(targetActionLayer)) return false;
-        return TryGetAnimationNormalizedTime(actionName, out var t , targetActionLayer) && t >= 0.98f;    
+        if (animator.IsInTransition(animLayer)) return false;
+        return TryGetNormalizedTimeOfAnimation(animName, out var t , animLayer) && t >= 0.98f;    
     }
 
 

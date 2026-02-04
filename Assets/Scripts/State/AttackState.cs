@@ -87,10 +87,13 @@ public class AttackState : FSMState
                 ResetComboIndex();
                 player.OnJumpInputConsume(); //消费掉跳跃输入
                 stateMachine.OnChangeState(player.jumpState);
+            }else
+            {
+                player.OnJumpInputConsume(); //消费掉跳跃输入
             }       
         }
 
-        if (IsCurrentAnimationOver()) //当前连击动作播放完毕
+        if (CheckCurrentAttackAnimationOver()) //当前连击动作播放完毕
         {
             ResetComboIndex();
             if (player.OnIsCanFlip()) { player.OnFlip(); }
@@ -131,32 +134,32 @@ public class AttackState : FSMState
     public void PlayComboAnimation()
     {
         var attackStep = comboSteps[GetCurrentComboIndex()];
-        player.OnPlayAnimation(attackStep.animShortHashName, attackStep.animLayer);
+        player.PlayAnimation(attackStep.animShortHashName, attackStep.animLayer);
     }
 
 
 
     /// <summary>
-    /// 判断：当前连击动作是否播放完毕
+    /// 判断：当前段攻击动画是否播放完毕
     /// </summary>
     /// <returns></returns>
-    public bool IsCurrentAnimationOver()
+    public bool CheckCurrentAttackAnimationOver()
     {
         if(player.comboIndex == 0 || player.comboIndex > comboSteps.Length) return false;  //索引边界判断，如果越界返回false
         var attackStep = comboSteps[GetCurrentComboIndex()];
-        return player.IsAnimationLoopComplete(attackStep.animShortHashName, attackStep.animLayer);
+        return player.IsAnimationComplete(attackStep.animShortHashName, attackStep.animLayer);
     }
 
 
     
     /// <summary>
-    /// 更新攻击阶段：这个方法很重要，用来检测当前处于攻击的哪个阶段
+    /// 获取攻击阶段枚举
     /// </summary>
     public AttackStage GetCurrentAttackStage()
     {
         if(player.comboIndex == 0 || player.comboIndex > comboSteps.Length) {return AttackStage.None;}
         var attackStep = comboSteps[GetCurrentComboIndex()]; 
-        if(!player.TryGetAnimationNormalizedTime(attackStep.animShortHashName, out var t, attackStep.animLayer)){return AttackStage.None;}//获取当前动画归一化时间失败，返回None
+        if(!player.TryGetNormalizedTimeOfAnimation(attackStep.animShortHashName, out var t, attackStep.animLayer)){return AttackStage.None;}//获取当前动画归一化时间失败，返回None
 
         if     (t < attackStep.preAttackEnd)   {return AttackStage.PreAttack; } //前摇阶段
         else if(t < attackStep.attackingEnd)   {return AttackStage.Attacking; } //攻击阶段
@@ -168,28 +171,28 @@ public class AttackState : FSMState
 
 
     /// <summary>
-    /// 通过时间检测：是否处于某个攻击阶段的某个时间窗口内
+    /// 通过时间检测：是否处于某个攻击阶段的时间窗口内
     /// </summary>
-    /// <param name="actionName">攻击动画的名字</param>
-    /// <param name="targetActionLayer">攻击动画所在动画层级</param>
+    /// <param name="animName">攻击动画的名字</param>
+    /// <param name="animLayer">攻击动画所在动画层级</param>
     /// <param name="tempStage">攻击阶段枚举</param>
     /// <param name="endTime">窗口结束时间</param>
     /// <returns></returns>
-    public bool CheckWindowByTime(int actionName , int targetActionLayer , AttackStage tempStage , float endTime)
+    public bool CheckAttackStageWindowByTime(int animName , int animLayer , AttackStage tempStage , float endTime)
     {
-        return player.TryGetAnimationNormalizedTime(actionName, out var t , targetActionLayer) && t <= endTime && tempStage == GetCurrentAttackStage();
+        return player.TryGetNormalizedTimeOfAnimation(animName, out var t , animLayer) && tempStage == GetCurrentAttackStage() && t <= endTime;
     }
 
 
 
     /// <summary>
-    /// 判断：是否处于连击输入窗口内  
+    /// 判断：是否可以进行下一段攻击输入
     /// </summary>
     /// <returns></returns>
     public bool CanInputNextCombo()
     {
         var attackStep = comboSteps[GetCurrentComboIndex()];
-        return CheckWindowByTime(attackStep.animShortHashName, attackStep.animLayer, AttackStage.PostAttack , attackStep.comboWindowEnd);
+        return CheckAttackStageWindowByTime(attackStep.animShortHashName, attackStep.animLayer, AttackStage.PostAttack , attackStep.comboWindowEnd);
     }
 
 
@@ -204,7 +207,7 @@ public class AttackState : FSMState
         if(player.comboIndex == 0 || player.comboIndex > comboSteps.Length) return StateIntention.None;  //索引边界判断，如果越界返回false    
         var attackStep = comboSteps[GetCurrentComboIndex()];
         if(attackStep.isCanBeInterrupted == false) return StateIntention.None;                            //数据判断，如果该段攻击不允许被打断则返回false
-        return intentionType;                                                                             //目前只允许跳跃意图打断攻击
+        return intentionType;                                                                             //都通过则返回传入的意图类型
     }   
 
 
@@ -215,7 +218,7 @@ public class AttackState : FSMState
     /// <returns></returns>
     public bool CanBeInterruptedNow(StateIntention intentionType , AttackStage requiredStage)
     {
-        return GetCurrentAttackStage() == requiredStage && AttackInterrupted(intentionType) == intentionType;
+        return AttackInterrupted(intentionType) == intentionType && GetCurrentAttackStage() == requiredStage ;
     }
 
 
