@@ -16,7 +16,6 @@ public class JumpState : FSMState
     public override void OnEnter()
     {
         jumpEnterTime = Time.time;
-        Debug.Log("进入跳跃状态" + Time.frameCount);
 
         player.OnJump();
 
@@ -25,12 +24,10 @@ public class JumpState : FSMState
     public override void OnExit()
     {
         player.RB2D.gravityScale = player.defaultGravity;
-        Debug.Log("离开跳跃状态");
     }
 
     public override void OnUpdate()
     {
-        //Debug.Log("跳跃状态中" + "  " + Time.frameCount);
         // 至少等一小段时间，避免地面判定抖动
         if (Time.time - jumpEnterTime < minAirTime) return;
 
