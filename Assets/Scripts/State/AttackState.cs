@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Mono.Cecil.Cil;
 using UnityEngine;
 
 
@@ -16,7 +15,7 @@ public struct ComboStep
     public float preAttackEnd;         //前摇结束时间
     public float attackingEnd;         //攻击中结束时间
     public float postAttackEnd;        //后摇结束时间
-    public bool isCanBeInterrupted;    //该段攻击是否可以被打断
+    public bool  isCanBeInterrupted;   //该段攻击是否可以被打断
 }
 
 
@@ -62,7 +61,7 @@ public class AttackState : FSMState
         base.OnEnter();
 
         player.comboIndex=1; //进入攻击状态时，连击索引设为1，表示第一段攻击       
-        PlayComboAction();
+        PlayComboAnimation();
 
     }
 
@@ -77,7 +76,7 @@ public class AttackState : FSMState
             player.OnAttackInputConsume();//消费掉攻击输入
             if(player.comboIndex > comboSteps.Length){ ResetComboIndex(); }//索引边界判断
             player.comboIndex++;
-            PlayComboAction();
+            PlayComboAnimation();
             
         }
 
@@ -129,7 +128,7 @@ public class AttackState : FSMState
     /// <summary>
     /// 播放连击动作
     /// </summary>
-    public void PlayComboAction()
+    public void PlayComboAnimation()
     {
         var attackStep = comboSteps[GetCurrentComboIndex()];
         player.OnPlayAnimation(attackStep.animShortHashName, attackStep.animLayer);
