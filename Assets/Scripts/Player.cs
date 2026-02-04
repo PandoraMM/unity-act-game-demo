@@ -218,7 +218,7 @@ public class Player : MonoBehaviour
     /// <param name="normalizedTime">out参数，返回当前动画的归一化时间</param>
     /// <param name="targetActionLayer">动画层级，给一个缺省值，表示基础层级，如果没有特殊层级变化，可以不写</param>
     /// <returns></returns>
-    public bool TryGetActionNormalizedTime(int actionName, out float normalizedTime , int targetActionLayer = 0) 
+    public bool TryGetAnimationNormalizedTime(int actionName, out float normalizedTime , int targetActionLayer = 0) 
     {
         AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(targetActionLayer);
         if (info.shortNameHash == actionName) 
@@ -238,10 +238,10 @@ public class Player : MonoBehaviour
     /// <param name="actionName"></param>
     /// <param name="targetActionLayer"></param>
     /// <returns></returns>
-    public bool IsCurrentActionFinished(int actionName, int targetActionLayer = 0) 
+    public bool IsAnimationLoopComplete(int actionName, int targetActionLayer = 0) 
     {
         if (animator.IsInTransition(targetActionLayer)) return false;
-        return TryGetActionNormalizedTime(actionName, out var t , targetActionLayer) && t >= 0.98f;    
+        return TryGetAnimationNormalizedTime(actionName, out var t , targetActionLayer) && t >= 0.98f;    
     }
 
 
