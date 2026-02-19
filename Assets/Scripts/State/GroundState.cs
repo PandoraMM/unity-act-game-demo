@@ -5,17 +5,19 @@ using UnityEngine;
 public class GroundState : FSMState
 {
 
+
+
     public GroundState(Player player , FSMStateMachine stateMachine) : base(player , stateMachine) { }
 
-    public override void OnEnter()
-    {
-        Debug.Log("进入地面状态 ");
-    }
 
-    public override void OnExit()
-    {
 
-    }
+    public override void OnEnter(){Debug.Log("进入地面状态 ");}
+
+
+
+    public override void OnExit(){}
+
+
 
     public override void OnUpdate()
     {
@@ -36,8 +38,9 @@ public class GroundState : FSMState
         }
     }
 
-    public override void OnFixedUpdate()
-    {
-        base.OnFixedUpdate();
-    }
+
+
+    public override void OnFixedUpdate(){base.OnFixedUpdate();}
+
+    
 }

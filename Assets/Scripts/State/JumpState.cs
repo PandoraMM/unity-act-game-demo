@@ -5,13 +5,16 @@ using UnityEngine;
 public class JumpState : FSMState
 {
 
+
+
     private float jumpEnterTime;
     private const float minAirTime = 0.05f;
 
-    public JumpState(Player player, FSMStateMachine stateMachine) : base(player, stateMachine) 
-    {
 
-    }
+
+    public JumpState(Player player, FSMStateMachine stateMachine) : base(player, stateMachine){}
+
+
 
     public override void OnEnter()
     {
@@ -21,10 +24,7 @@ public class JumpState : FSMState
 
     }
 
-    public override void OnExit()
-    {
-        player.PRB2D.gravityScale = player.defaultGravity;
-    }
+
 
     public override void OnUpdate()
     {
@@ -59,6 +59,13 @@ public class JumpState : FSMState
         float targetGravity = player.OnGetTargetGravity();
         player.OnApplyGravity(targetGravity);
 
+    }
+
+
+
+    public override void OnExit()
+    {
+        player.PRB2D.gravityScale = player.defaultGravity;
     }
 
 

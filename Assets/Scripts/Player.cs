@@ -4,8 +4,13 @@ using UnityEngine;
 
 
 
+[RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(Animator))]
 public class Player : MonoBehaviour
 {
+
+#region 状态
+
     public FSMStateMachine stateMachine;
     public GroundState groundState;
     public IdleState   idleState;
@@ -13,39 +18,47 @@ public class Player : MonoBehaviour
     public JumpState   jumpState;
     public AttackState attackState;
 
+#endregion
+
+#region 组件
+
     public Rigidbody2D PRB2D { get; set; }
     public Animator PAnimator { get; set; }
 
+#endregion
+
+#region 角色属性（共有变量）
     public float moveMaxSpeed = 2.0f; //移动的最大速率
     public float moveAcceleration = 10.0f; //移动的加速度（注意，这里是标量）
-    public  int  inputDirection = 0; // 输入：水平轴的数值
-
+    public int   inputDirection = 0; // 输入：水平轴的数值
     public bool  isOnGround = true; //判断是否能进行跳
     public float jumpSpeed = 4; //起跳的速度
     public float JumpBufferDuration = 0.5f; //跳跃缓冲倒计时
     public float coyoteTimeDuration = 0.5f; //土狼时间
     public float miniJumpTime = 0.5f; //最小跳跃持续时间
     public bool isJumpInputHold = false; //是否持续按住了跳跃按键
-
     public float defaultGravity = 1; //角色默认的重力
     public float risingGravity = 1f; //角色上升的重力
     public float apexGravity = 0.2f; //角色达到最高点的重力
     public float fallingGravity = 4f; //角色下降的重力
     public float gravityChangeSpeed = 2f; //重力变化量
-
     public float attackBufferDuration = 0.8f; //攻击缓冲时间
     public int comboIndex = 0; //连击索引 0表示没有连击 1表示一段攻击 2表示二段攻击
-
     public GameObject groundCheckObject; //用于做地面检测的物体
     public LayerMask groundLayer;
     public float groundCheckRadius; //检测球的半径范围
+#endregion
+
+#region 其他字段（私有变量）
 
     private bool isPendingAttackInput; //挂起攻击输入的判定（可理解为记账）
     private bool isPendingJumpInput; //挂起跳跃输入的判定
     private int currentDirection = 1; //当前角色的面朝向
-    private float lastGroundTime = -999f;  //记录上一次落地时间
-    private float lastJumpInputTime = -999f;  //记录上一次按下跳跃的时间
-    private float lastAttackInputTime = -999f;//记录上一次按下攻击的时间
+    private float lastGroundTime = -999f; //记录上一次落地时间
+    private float lastJumpInputTime = -999f; //记录上一次按下跳跃的时间
+    private float lastAttackInputTime = -999f; //记录上一次按下攻击的时间
+
+#endregion
 
 
 
@@ -119,7 +132,7 @@ public class Player : MonoBehaviour
     /// 判断：角色是否能翻转
     /// </summary>   
     /// <returns></returns> 
-    public bool OnIsCanFlip() => (inputDirection != 0 && inputDirection != currentDirection);
+    public bool OnIsCanFlip() => inputDirection != 0 && inputDirection != currentDirection;
 
 
 
@@ -129,119 +142,31 @@ public class Player : MonoBehaviour
     public void OnFlip()         
     {
         currentDirection = currentDirection * -1;
-        this.transform.Rotate(new Vector3(0, 180, 0));
+        transform.Rotate(new Vector3(0, 180, 0));
     }
 
 
 
     /// <summary>
-    /// 角色跳跃
+    /// 控制移动
     /// </summary>
-    public void OnJump()
+    /// <param name="inputX"></param>
+    public void OnHandleMove(float inputX)
     {
-        PRB2D.linearVelocity = new Vector2(PRB2D.linearVelocity.x, jumpSpeed);
-    }
-
-
-
-    public bool OnIsCanJump() =>Time.time - lastJumpInputTime <= JumpBufferDuration;
-
-
-
-    public bool OnIsCoyoteTime() =>Time.time - lastGroundTime <= coyoteTimeDuration;
-
-
-
-    /// <summary>
-    /// 跳跃挂起讯号
-    /// </summary>
-    /// <returns></returns>
-    public bool OnIsPendingJumpInput() => isPendingJumpInput;       
-
-
-
-    /// <summary>
-    /// 消费跳跃挂起
-    /// </summary>
-    public void OnJumpInputConsume() 
-    {
-        isPendingJumpInput = false; //消费掉跳跃输入的挂起行为
+        float targetSpeed = inputX * moveMaxSpeed;
+        float currentSpeed = Mathf.MoveTowards(PRB2D.linearVelocity.x, targetSpeed, moveAcceleration * Time.fixedDeltaTime);
+        PRB2D.linearVelocity = new Vector2(currentSpeed, PRB2D.linearVelocity.y);
     }
 
 
 
     /// <summary>
-    /// 攻击请求
+    /// 控制空中移动
     /// </summary>
-    /// <returns></returns>
-    public bool OnIsAttackRequest() 
+    /// <param name="inputX"></param>
+    public void OnHandleInAirMove(float inputX)
     {
-        if (!isPendingAttackInput) { return false; }//如果没有被记账 返回False
-
-        if (Time.time - lastAttackInputTime > attackBufferDuration) //如果上一次按下攻击按键的时间超过预设的攻击缓冲时间，则超时，返回Fasle
-        {
-            isPendingAttackInput = false; 
-            return false ; 
-        }
-        return true; //除去以上两种情况之外，就返回True
-    }
-
-
-
-    /// <summary>
-    /// 攻击消费，证明已经将攻击讯号使用了的方法
-    /// </summary>
-    public void OnAttackInputConsume() 
-    {
-        isPendingAttackInput = false; //消费被记账的挂起行为
-    }
-
-
-
-    /// <summary>
-    /// 播放动画
-    /// </summary>
-    /// <param name="animName"></param>
-    /// <param name="animLayer"></param>
-    public void PlayAnimation(int animName, int animLayer = 0) 
-    {
-        PAnimator.Play(animName , animLayer);
-        PAnimator.speed = 1;
-    }
-
-
-
-    /// <summary>
-    /// 判断：获取当前动画的归一化时间，既可以判断动画名字是否匹配，也可以获取当前动画的归一化时间
-    /// </summary>
-    /// <param name="animName">动画的名字</param>
-    /// <param name="normalizedTime">out参数，返回当前动画的归一化时间</param>
-    /// <param name="animLayer">动画层级，给一个缺省值，表示基础层级，如果没有特殊层级变化，可以不写</param>
-    /// <returns></returns>
-    public bool TryGetNormalizedTimeOfAnimation(int animName, out float normalizedTime , int animLayer = 0) 
-    {
-        AnimatorStateInfo info = PAnimator.GetCurrentAnimatorStateInfo(animLayer);
-        if (info.shortNameHash == animName) 
-        {
-            normalizedTime = info.normalizedTime;
-            return true;
-        }
-        normalizedTime = 0;
-        return false;
-    }
-
-
-
-    /// <summary>
-    /// 检查当前动画是否播放完成    
-    /// </summary>
-    /// <param name="animName"></param>
-    /// <param name="animLayer"></param>
-    /// <returns></returns>
-    public bool IsAnimationComplete(int animName, int animLayer = 0) 
-    {
-        if (PAnimator.IsInTransition(animLayer)) return false;
-        return TryGetNormalizedTimeOfAnimation(animName, out var t , animLayer) && t >= 0.98f;    
+        OnHandleMove(inputX);//偷懒的做法，因为我暂时决定玩家可以自由的控制角色在空中时的水平方向的速度，所以直接取水平移动的方法~~哈哈哈~~
     }
 
 
@@ -296,26 +221,20 @@ public class Player : MonoBehaviour
 
 
 
-    /// <summary>
-    /// 控制移动
-    /// </summary>
-    /// <param name="inputX"></param>
-    public void OnHandleMove(float inputX)
-    {
-        float targetSpeed = inputX * moveMaxSpeed;
-        float currentSpeed = Mathf.MoveTowards(PRB2D.linearVelocity.x, targetSpeed, moveAcceleration * Time.fixedDeltaTime);
-        PRB2D.linearVelocity = new Vector2(currentSpeed, PRB2D.linearVelocity.y);
-    }
+    public bool OnIsCanJump() =>Time.time - lastJumpInputTime <= JumpBufferDuration;
+
+
+
+    public bool OnIsCoyoteTime() =>Time.time - lastGroundTime <= coyoteTimeDuration;
 
 
 
     /// <summary>
-    /// 控制空中移动
+    /// 角色跳跃
     /// </summary>
-    /// <param name="inputX"></param>
-    public void OnHandleInAirMove(float inputX)
+    public void OnJump()
     {
-        OnHandleMove(inputX);//偷懒的做法，因为我暂时决定玩家可以自由的控制角色在空中时的水平方向的速度，所以直接取水平移动的方法~~哈哈哈~~
+        PRB2D.linearVelocity = new Vector2(PRB2D.linearVelocity.x, jumpSpeed);
     }
 
 
@@ -336,6 +255,108 @@ public class Player : MonoBehaviour
             }
         }
     }
+
+
+
+    /// <summary>
+    /// 跳跃挂起讯号
+    /// </summary>
+    /// <returns></returns>
+    public bool OnIsPendingJumpInput() => isPendingJumpInput;       
+
+
+
+    /// <summary>
+    /// 消费跳跃挂起
+    /// </summary>
+    public void OnJumpInputConsume() 
+    {
+        isPendingJumpInput = false; //消费掉跳跃输入的挂起行为
+    }
+
+
+
+    /// <summary>
+    /// 攻击请求
+    /// </summary>
+    /// <returns></returns>
+    public bool OnIsAttackRequest() 
+    {
+        if (!isPendingAttackInput) //如果没有被记账 返回False
+        { 
+            return false; 
+        }
+
+        if (Time.time - lastAttackInputTime > attackBufferDuration) //如果上一次按下攻击按键的时间超过预设的攻击缓冲时间，则超时，返回Fasle
+        {
+            isPendingAttackInput = false; 
+            return false ; 
+        }
+
+        return true; //除去以上两种情况之外，就返回True
+    }
+
+
+
+    /// <summary>
+    /// 攻击消费，证明已经将攻击讯号使用了的方法
+    /// </summary>
+    public void OnAttackInputConsume() => isPendingAttackInput = false;
+
+
+
+    /// <summary>
+    /// 播放动画
+    /// </summary>
+    /// <param name="animName"></param>
+    /// <param name="animLayer"></param>
+    public void PlayAnimation(int animName, int animLayer = 0) 
+    {
+        PAnimator.Play(animName , animLayer);
+        PAnimator.speed = 1;
+    }
+
+
+
+    /// <summary>
+    /// 判断：获取当前动画的归一化时间，既可以判断动画名字是否匹配，也可以获取当前动画的归一化时间
+    /// </summary>
+    /// <param name="animName">动画的名字</param>
+    /// <param name="normalizedTime">out参数，返回当前动画的归一化时间</param>
+    /// <param name="animLayer">动画层级，给一个缺省值，表示基础层级，如果没有特殊层级变化，可以不写</param>
+    /// <returns></returns>
+    public bool TryGetNormalizedTimeOfAnimation(int animName, out float normalizedTime , int animLayer = 0) 
+    {
+        AnimatorStateInfo info = PAnimator.GetCurrentAnimatorStateInfo(animLayer);
+
+        if (info.shortNameHash == animName) 
+        {
+            normalizedTime = info.normalizedTime;
+            return true;
+        }
+
+        normalizedTime = 0;
+        return false;
+    }
+
+
+
+    /// <summary>
+    /// 检查当前动画是否播放完成    
+    /// </summary>
+    /// <param name="animName"></param>
+    /// <param name="animLayer"></param>
+    /// <returns></returns>
+    public bool IsAnimationComplete(int animName, int animLayer = 0) 
+    {
+        if (PAnimator.IsInTransition(animLayer)) return false;
+        return TryGetNormalizedTimeOfAnimation(animName, out var t , animLayer) && t >= 0.98f;    
+    }
+
+
+
+
+
 
 
 
