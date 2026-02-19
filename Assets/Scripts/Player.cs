@@ -8,13 +8,13 @@ public class Player : MonoBehaviour
 {
     public FSMStateMachine stateMachine;
     public GroundState groundState;
-    public IdleState idleState;
-    public MoveState moveState;
-    public JumpState jumpState;
+    public IdleState   idleState;
+    public MoveState   moveState;
+    public JumpState   jumpState;
     public AttackState attackState;
 
-    public Rigidbody2D RB2D { get; set; }
-    public Animator animator { get; set; }
+    public Rigidbody2D PRB2D { get; set; }
+    public Animator PAnimator { get; set; }
 
     public float moveMaxSpeed = 2.0f; //移动的最大速率
     public float moveAcceleration = 10.0f; //移动的加速度（注意，这里是标量）
@@ -51,14 +51,15 @@ public class Player : MonoBehaviour
 
     private void Awake()
     {
-        RB2D = GetComponent<Rigidbody2D>();
-        animator = GetComponent<Animator>();
+        PRB2D     = GetComponent<Rigidbody2D>();
+        PAnimator = GetComponent<Animator>();
 
         stateMachine = new FSMStateMachine();
-        idleState = new IdleState(this, stateMachine);
-        moveState = new MoveState(this, stateMachine);
-        jumpState = new JumpState(this, stateMachine);
-        attackState = new AttackState(this, stateMachine);
+
+        idleState    = new IdleState  (this, stateMachine);
+        moveState    = new MoveState  (this, stateMachine);
+        jumpState    = new JumpState  (this, stateMachine);
+        attackState  = new AttackState(this, stateMachine);
     }
 
 
@@ -66,7 +67,6 @@ public class Player : MonoBehaviour
     void Start() 
     { 
         stateMachine.Initalize(idleState); 
-        
     }
 
 
@@ -139,7 +139,7 @@ public class Player : MonoBehaviour
     /// </summary>
     public void OnJump()
     {
-        RB2D.linearVelocity = new Vector2(RB2D.linearVelocity.x, jumpSpeed);
+        PRB2D.linearVelocity = new Vector2(PRB2D.linearVelocity.x, jumpSpeed);
     }
 
 
@@ -205,8 +205,8 @@ public class Player : MonoBehaviour
     /// <param name="animLayer"></param>
     public void PlayAnimation(int animName, int animLayer = 0) 
     {
-        animator.Play(animName , animLayer);
-        animator.speed = 1;
+        PAnimator.Play(animName , animLayer);
+        PAnimator.speed = 1;
     }
 
 
@@ -220,7 +220,7 @@ public class Player : MonoBehaviour
     /// <returns></returns>
     public bool TryGetNormalizedTimeOfAnimation(int animName, out float normalizedTime , int animLayer = 0) 
     {
-        AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(animLayer);
+        AnimatorStateInfo info = PAnimator.GetCurrentAnimatorStateInfo(animLayer);
         if (info.shortNameHash == animName) 
         {
             normalizedTime = info.normalizedTime;
@@ -240,7 +240,7 @@ public class Player : MonoBehaviour
     /// <returns></returns>
     public bool IsAnimationComplete(int animName, int animLayer = 0) 
     {
-        if (animator.IsInTransition(animLayer)) return false;
+        if (PAnimator.IsInTransition(animLayer)) return false;
         return TryGetNormalizedTimeOfAnimation(animName, out var t , animLayer) && t >= 0.98f;    
     }
 
@@ -250,7 +250,7 @@ public class Player : MonoBehaviour
     /// 正在上升
     /// </summary>
     /// <returns></returns>
-    public bool OnIsRising() => RB2D.linearVelocity.y > 0.1f ;
+    public bool OnIsRising() => PRB2D.linearVelocity.y > 0.1f ;
     
     
 
@@ -258,7 +258,7 @@ public class Player : MonoBehaviour
     /// 在最高点
     /// </summary>
     /// <returns></returns>
-    public bool OnIsApex() => Mathf.Abs(RB2D.linearVelocity.y) < 0.1f ;
+    public bool OnIsApex() => Mathf.Abs(PRB2D.linearVelocity.y) < 0.1f ;
     
     
 
@@ -266,7 +266,7 @@ public class Player : MonoBehaviour
     /// 正在下降
     /// </summary>
     /// <returns></returns>
-    public bool OnIsFalling() => RB2D.linearVelocity.y < 0f ;
+    public bool OnIsFalling() => PRB2D.linearVelocity.y < 0f ;
 
 
     
@@ -291,7 +291,7 @@ public class Player : MonoBehaviour
     /// <param name="targetGravity"></param>
     public void OnApplyGravity(float targetGravity) 
     {
-        RB2D.gravityScale = Mathf.MoveTowards(RB2D.gravityScale, targetGravity, gravityChangeSpeed * Time.fixedDeltaTime);
+        PRB2D.gravityScale = Mathf.MoveTowards(PRB2D.gravityScale, targetGravity, gravityChangeSpeed * Time.fixedDeltaTime);
     }
 
 
@@ -303,8 +303,8 @@ public class Player : MonoBehaviour
     public void OnHandleMove(float inputX)
     {
         float targetSpeed = inputX * moveMaxSpeed;
-        float currentSpeed = Mathf.MoveTowards(RB2D.linearVelocity.x, targetSpeed, moveAcceleration * Time.fixedDeltaTime);
-        RB2D.linearVelocity = new Vector2(currentSpeed, RB2D.linearVelocity.y);
+        float currentSpeed = Mathf.MoveTowards(PRB2D.linearVelocity.x, targetSpeed, moveAcceleration * Time.fixedDeltaTime);
+        PRB2D.linearVelocity = new Vector2(currentSpeed, PRB2D.linearVelocity.y);
     }
 
 
@@ -330,9 +330,9 @@ public class Player : MonoBehaviour
         {
             if (OnIsRising() && !isJumpInputHold)
             {
-                float targetVelocityVertical = Mathf.MoveTowards(RB2D.linearVelocity.y , 0 , 80 *Time.fixedDeltaTime); //先写一个魔法数字，让这里的操作手感稍微好一点
+                float targetVelocityVertical = Mathf.MoveTowards(PRB2D.linearVelocity.y , 0 , 80 *Time.fixedDeltaTime); //先写一个魔法数字，让这里的操作手感稍微好一点
 
-                RB2D.linearVelocity = new Vector2(RB2D.linearVelocity.x, targetVelocityVertical);
+                PRB2D.linearVelocity = new Vector2(PRB2D.linearVelocity.x, targetVelocityVertical);
             }
         }
     }

@@ -23,7 +23,7 @@ public class JumpState : FSMState
 
     public override void OnExit()
     {
-        player.RB2D.gravityScale = player.defaultGravity;
+        player.PRB2D.gravityScale = player.defaultGravity;
     }
 
     public override void OnUpdate()

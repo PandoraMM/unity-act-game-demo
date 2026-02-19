@@ -7,6 +7,11 @@ public class FSMState
     public Player player;
     public FSMStateMachine stateMachine;
 
+    /// <summary>
+    /// 构造函数
+    /// </summary>
+    /// <param name="player"></param>
+    /// <param name="stateMachine"></param>
     public FSMState(Player player , FSMStateMachine stateMachine ) 
     {
         this.player = player;
