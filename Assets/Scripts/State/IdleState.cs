@@ -39,7 +39,7 @@ public class IdleState : GroundState
     public override void OnFixedUpdate()
     {
         base.OnFixedUpdate();
-        player.OnHandleMove(0);
+        player.HandleMove(0);
     }
 
 

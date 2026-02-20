@@ -5,10 +5,8 @@ using UnityEngine;
 public class JumpState : FSMState
 {
 
-
-
-    private float jumpEnterTime;
-    private const float minAirTime = 0.05f;
+    private float jumpEnterTime; //记录进入跳跃状态的时间
+    private const float minAirTime = 0.05f; //最小空中时间，防止地面检测抖动导致状态频繁切换
 
 
 
@@ -20,7 +18,7 @@ public class JumpState : FSMState
     {
         jumpEnterTime = Time.time;
 
-        player.OnJump();
+        player.Jump();
 
     }
 
@@ -28,11 +26,10 @@ public class JumpState : FSMState
 
     public override void OnUpdate()
     {
-        // 至少等一小段时间，避免地面判定抖动
+        // 至少等一小段时间，避免地面判定抖动（等待物理更新）
         if (Time.time - jumpEnterTime < minAirTime) return;
 
         if (player.OnIsCanFlip()) { player.OnFlip(); } //空中转身
-
 
         if (player.isOnGround)
         {
@@ -51,13 +48,11 @@ public class JumpState : FSMState
 
     public override void OnFixedUpdate()
     {
-        player.OnHandleInAirMove(player.inputDirection);
-
+        float targetGravity = player.GetTargetGravity();
+        player.ApplyGravity(targetGravity);
+        player.HandleInAirMove(player.inputDirection);
         player.OnHandleVeriableJump(jumpEnterTime);
 
-
-        float targetGravity = player.OnGetTargetGravity();
-        player.OnApplyGravity(targetGravity);
 
     }
 

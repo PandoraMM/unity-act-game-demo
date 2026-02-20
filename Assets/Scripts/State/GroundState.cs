@@ -5,8 +5,6 @@ using UnityEngine;
 public class GroundState : FSMState
 {
 
-
-
     public GroundState(Player player , FSMStateMachine stateMachine) : base(player , stateMachine) { }
 
 
@@ -24,7 +22,7 @@ public class GroundState : FSMState
         base.OnUpdate();
 
         //=======================跳跃状态切换=======================
-        if (player.OnIsCanJump() && player.OnIsCoyoteTime())
+        if (player.IsCanJump() && player.IsCoyoteTime())
         {
             player.OnJumpInputConsume(); //消费掉跳跃输入
             stateMachine.OnChangeState(player.jumpState);

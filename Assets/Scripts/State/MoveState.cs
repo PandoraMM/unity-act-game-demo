@@ -45,7 +45,7 @@ public class MoveState : GroundState
     {
         base.OnFixedUpdate();
 
-        player.OnHandleMove(player.inputDirection);
+        player.HandleMove(player.inputDirection);
     }
 
 }

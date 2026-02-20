@@ -141,7 +141,7 @@ public class Player : MonoBehaviour
     /// </summary>
     public void OnFlip()         
     {
-        currentDirection = currentDirection * -1;
+        currentDirection *= -1;
         transform.Rotate(new Vector3(0, 180, 0));
     }
 
@@ -151,7 +151,7 @@ public class Player : MonoBehaviour
     /// 控制移动
     /// </summary>
     /// <param name="inputX"></param>
-    public void OnHandleMove(float inputX)
+    public void HandleMove(float inputX)
     {
         float targetSpeed = inputX * moveMaxSpeed;
         float currentSpeed = Mathf.MoveTowards(PRB2D.linearVelocity.x, targetSpeed, moveAcceleration * Time.fixedDeltaTime);
@@ -164,9 +164,9 @@ public class Player : MonoBehaviour
     /// 控制空中移动
     /// </summary>
     /// <param name="inputX"></param>
-    public void OnHandleInAirMove(float inputX)
+    public void HandleInAirMove(float inputX)
     {
-        OnHandleMove(inputX);//偷懒的做法，因为我暂时决定玩家可以自由的控制角色在空中时的水平方向的速度，所以直接取水平移动的方法~~哈哈哈~~
+        HandleMove(inputX);//偷懒的做法，因为我暂时决定玩家可以自由的控制角色在空中时的水平方向的速度，所以直接取水平移动的方法~~哈哈哈~~
     }
 
 
@@ -175,7 +175,7 @@ public class Player : MonoBehaviour
     /// 正在上升
     /// </summary>
     /// <returns></returns>
-    public bool OnIsRising() => PRB2D.linearVelocity.y > 0.1f ;
+    public bool Rising() => PRB2D.linearVelocity.y > 0.1f ;
     
     
 
@@ -183,7 +183,7 @@ public class Player : MonoBehaviour
     /// 在最高点
     /// </summary>
     /// <returns></returns>
-    public bool OnIsApex() => Mathf.Abs(PRB2D.linearVelocity.y) < 0.1f ;
+    public bool Apex() => Mathf.Abs(PRB2D.linearVelocity.y) < 0.1f ;
     
     
 
@@ -191,7 +191,7 @@ public class Player : MonoBehaviour
     /// 正在下降
     /// </summary>
     /// <returns></returns>
-    public bool OnIsFalling() => PRB2D.linearVelocity.y < 0f ;
+    public bool Falling() => PRB2D.linearVelocity.y < 0f ;
 
 
     
@@ -199,11 +199,11 @@ public class Player : MonoBehaviour
     /// 获取目标重力
     /// </summary>
     /// <returns></returns>
-    public float OnGetTargetGravity() 
+    public float GetTargetGravity() 
     {
-        if (OnIsRising())       { return risingGravity;       }
-        else if (OnIsApex())    { return apexGravity;         }
-        else if (OnIsFalling()) { return fallingGravity;      }
+        if (Rising())       { return risingGravity;  }
+        else if (Apex())    { return apexGravity;    }
+        else if (Falling()) { return fallingGravity; }
 
         return defaultGravity;
     }
@@ -214,25 +214,33 @@ public class Player : MonoBehaviour
     /// 应用重力
     /// </summary>
     /// <param name="targetGravity"></param>
-    public void OnApplyGravity(float targetGravity) 
+    public void ApplyGravity(float targetGravity) 
     {
         PRB2D.gravityScale = Mathf.MoveTowards(PRB2D.gravityScale, targetGravity, gravityChangeSpeed * Time.fixedDeltaTime);
     }
 
 
 
-    public bool OnIsCanJump() =>Time.time - lastJumpInputTime <= JumpBufferDuration;
+    /// <summary>
+    /// 根据跳跃输入的时间判断角色是否可以跳跃（也就是跳跃缓冲）
+    /// </summary>
+    /// <returns></returns>
+    public bool IsCanJump() =>Time.time - lastJumpInputTime <= JumpBufferDuration;
 
 
 
-    public bool OnIsCoyoteTime() =>Time.time - lastGroundTime <= coyoteTimeDuration;
+    /// <summary>
+    /// 根据角色离开地面的时间判断角色是否在土狼时间内
+    /// </summary>
+    /// <returns></returns>
+    public bool IsCoyoteTime() =>Time.time - lastGroundTime <= coyoteTimeDuration;
 
 
 
     /// <summary>
     /// 角色跳跃
     /// </summary>
-    public void OnJump()
+    public void Jump()
     {
         PRB2D.linearVelocity = new Vector2(PRB2D.linearVelocity.x, jumpSpeed);
     }
@@ -242,16 +250,16 @@ public class Player : MonoBehaviour
     /// <summary>
     /// 控制可变化的跳跃
     /// </summary>
-    /// <param name="jumpEnterTime"></param>
+    /// <param name="jumpEnterTime">进入跳跃状态的时间</param>
     public void OnHandleVeriableJump(float jumpEnterTime) 
     {
         if (Time.time - jumpEnterTime > miniJumpTime)
         {
-            if (OnIsRising() && !isJumpInputHold)
+            if (Rising() && !isJumpInputHold)
             {
-                float targetVelocityVertical = Mathf.MoveTowards(PRB2D.linearVelocity.y , 0 , 80 *Time.fixedDeltaTime); //先写一个魔法数字，让这里的操作手感稍微好一点
+                float targetVelocityV = Mathf.MoveTowards(PRB2D.linearVelocity.y , 0 , 80 *Time.fixedDeltaTime); //先写一个魔法数字，让这里的操作手感稍微好一点
 
-                PRB2D.linearVelocity = new Vector2(PRB2D.linearVelocity.x, targetVelocityVertical);
+                PRB2D.linearVelocity = new Vector2(PRB2D.linearVelocity.x, targetVelocityV);
             }
         }
     }
