@@ -26,8 +26,7 @@ public class AttackState : FSMState
     //连击步骤数据数组：以结构体作为数组类型，存储数据
     public ComboStep[] comboSteps = new ComboStep[]
     {
-        new ComboStep //第一段攻击数据
-        { 
+        new(){ 
             animShortHashName = AnimClips.actionAttack1, 
             animLayer = AnimClips.baseLayer,
             comboWindowEnd = 0.9f,
@@ -35,9 +34,8 @@ public class AttackState : FSMState
             attackingEnd   = 0.667f,
             postAttackEnd  = 0.98f, 
             isCanBeInterrupted = true 
-            },
-        new ComboStep //第二段攻击数据
-        {
+        },
+        new(){
             animShortHashName = AnimClips.actionAttack2, 
             animLayer = AnimClips.baseLayer,
             comboWindowEnd = 0f, 
@@ -45,7 +43,7 @@ public class AttackState : FSMState
             attackingEnd   = 0.9f,
             postAttackEnd  = 0.98f, 
             isCanBeInterrupted = false 
-            },
+        },
     };  
 
     private AttackStage currentAttackStage; //当前攻击阶段
@@ -61,7 +59,7 @@ public class AttackState : FSMState
     {
         base.OnEnter();
 
-        player.comboIndex=0; //进入攻击状态时，连击索引设为1，表示第一段攻击       
+        player.comboIndex = 0; //进入攻击状态时，连击索引设为0，表示第一段攻击       
         PlayComboAnimation();
 
     }
@@ -90,13 +88,14 @@ public class AttackState : FSMState
                 ResetComboIndex();
                 player.OnJumpInputConsume(); //消费掉跳跃输入
                 stateMachine.OnChangeState(player.jumpState);
-            }else
+            }
+            else
             {
                 player.OnJumpInputConsume(); //消费掉跳跃输入
             }       
         }
 
-        if (CheckCurrentAttackAnimationOver()) //当前连击动作播放完毕
+        if (CheckCurrentAttackAnimationOver()) //动作播放完毕
         {
             ResetComboIndex();
             if (player.OnIsCanFlip()) { player.OnFlip(); }
@@ -129,7 +128,27 @@ public class AttackState : FSMState
         ResetComboIndex();
     }
 
+
+
 //=================================================================================================================================================================================================
+    
+    /// <summary>
+    /// 获取攻击阶段枚举
+    /// </summary>
+    public AttackStage GetCurrentAttackStage()
+    {
+        if(player.comboIndex >= comboSteps.Length) {return AttackStage.None;}
+        var attackStep = comboSteps[player.comboIndex]; 
+        if(!player.TryGetNormalizedTimeOfAnimation(attackStep.animShortHashName, out var t, attackStep.animLayer)){return AttackStage.None;}//获取当前动画归一化时间失败，返回None
+
+        if     (t <  attackStep.preAttackEnd ) {return AttackStage.PreAttack; } //前摇阶段
+        else if(t <  attackStep.attackingEnd ) {return AttackStage.Attacking; } //攻击阶段
+        else if(t <= attackStep.postAttackEnd) {return AttackStage.PostAttack;} //后摇阶段 
+
+        return AttackStage.None; //都不是则返回None 
+    }
+
+
 
     /// <summary>
     /// 播放连击动作
@@ -155,26 +174,9 @@ public class AttackState : FSMState
 
 
     
+ 
     /// <summary>
-    /// 获取攻击阶段枚举
-    /// </summary>
-    public AttackStage GetCurrentAttackStage()
-    {
-        if(player.comboIndex >= comboSteps.Length) {return AttackStage.None;}
-        var attackStep = comboSteps[player.comboIndex]; 
-        if(!player.TryGetNormalizedTimeOfAnimation(attackStep.animShortHashName, out var t, attackStep.animLayer)){return AttackStage.None;}//获取当前动画归一化时间失败，返回None
-
-        if     (t < attackStep.preAttackEnd)   {return AttackStage.PreAttack; } //前摇阶段
-        else if(t < attackStep.attackingEnd)   {return AttackStage.Attacking; } //攻击阶段
-        else if(t <= attackStep.postAttackEnd) {return AttackStage.PostAttack;} //后摇阶段 
-
-        return AttackStage.None; //都不是则返回None 
-    }
-
-
-
-    /// <summary>
-    /// 通过时间检测：是否处于某个攻击阶段的时间窗口内
+    /// 通过时间检测：是否处于攻击阶段的某个时间窗口内
     /// </summary>
     /// <param name="animName">攻击动画的名字</param>
     /// <param name="animLayer">攻击动画所在动画层级</param>
@@ -203,8 +205,9 @@ public class AttackState : FSMState
     /// <summary>
     /// 攻击动作可被打断的枚举        
     /// </summary>
+    /// <param name="intentionType">打断意图的类型</param>
     /// <returns></returns>
-    public StateIntention AttackInterrupted(StateIntention intentionType)
+    public StateIntention GetAttackInterrupted(StateIntention intentionType)
     {
 
         if(player.comboIndex >= comboSteps.Length) return StateIntention.None;  //索引边界判断，如果越界返回false    
@@ -218,10 +221,12 @@ public class AttackState : FSMState
     /// <summary>
     /// 判断：当前攻击动作是否可以被打断        
     /// </summary>
+    /// <param name="intentionType">打断意图的类型</param>
+    /// <param name="requiredStage">允许被打断的攻击阶段</param>
     /// <returns></returns>
     public bool CanBeInterruptedNow(StateIntention intentionType , AttackStage requiredStage)
     {
-        return AttackInterrupted(intentionType) == intentionType && currentAttackStage == requiredStage ;
+        return GetAttackInterrupted(intentionType) == intentionType && currentAttackStage == requiredStage ;
     }
 
 

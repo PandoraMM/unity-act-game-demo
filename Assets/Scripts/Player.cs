@@ -290,7 +290,7 @@ public class Player : MonoBehaviour
     /// <returns></returns>
     public bool OnIsAttackRequest() 
     {
-        if (!isPendingAttackInput) //如果没有被记账 返回False
+        if (!isPendingAttackInput) //如果没有被记账 返回False 请求失败
         { 
             return false; 
         }
