@@ -43,7 +43,7 @@ public class Player : MonoBehaviour
     public float fallingGravity = 4f; //角色下降的重力
     public float gravityChangeSpeed = 2f; //重力变化量
     public float attackBufferDuration = 0.8f; //攻击缓冲时间
-    public int comboIndex = 0; //连击索引 0表示没有连击 1表示一段攻击 2表示二段攻击
+    public int currentStepIndex  = 0; //当前攻击连段的节点
     public GameObject groundCheckObject; //用于做地面检测的物体
     public LayerMask groundLayer;
     public float groundCheckRadius; //检测球的半径范围
