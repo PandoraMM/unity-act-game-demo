@@ -26,6 +26,7 @@ public class GroundState : FSMState
         {
             player.OnJumpInputConsume(); //消费掉跳跃输入
             stateMachine.OnChangeState(player.jumpState);
+            return; //如果切换状态则返回，不继续往下执行，避免在同一帧内状态切换两次
         }
 
         //=======================攻击状态切换=======================      
@@ -33,6 +34,7 @@ public class GroundState : FSMState
         {
             player.OnAttackInputConsume();//消费掉攻击输入  
             stateMachine.OnChangeState(player.attackState);
+            return; //如果切换状态则返回，不继续往下执行，避免在同一帧内状态切换两次
         }
     }
 
