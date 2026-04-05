@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 
 
@@ -17,6 +18,11 @@ public struct ComboStep
     public float attackingEnd;         //攻击中结束时间
     public float postAttackEnd;        //后摇结束时间
     public bool  isCanBeInterrupted;   //该段攻击是否可以被打断
+
+    public float hitTime;              //攻击命中的时间，触发伤害判定等逻辑
+    public Vector2 hitOffset;          //攻击判定的中心，调整攻击判定的偏移位置
+    public float hitRadius;            //攻击判定的半径，整攻击判定的半径范围
+    public float hitStopDuration;      //击中停顿的持续时间，在这个时间内可以实现击中停顿效果，增加打击感等
     
 }
 
@@ -36,7 +42,11 @@ public class AttackState : FSMState
             preAttackEnd   = 0.167f,
             attackingEnd   = 0.667f,
             postAttackEnd  = 0.98f, 
-            isCanBeInterrupted = true 
+            isCanBeInterrupted = true,
+            hitTime = 0.3f,
+            hitOffset = new Vector2(0.8f, 0f),
+            hitRadius = 0.5f,
+            hitStopDuration = 0.05f
         },
         new(){
             nextStepIndex = -1,   
@@ -46,12 +56,16 @@ public class AttackState : FSMState
             preAttackEnd   = 0.4f,
             attackingEnd   = 0.9f,
             postAttackEnd  = 0.98f, 
-            isCanBeInterrupted = false 
+            isCanBeInterrupted = false,
+            hitTime = 0.45f,
+            hitOffset = new Vector2(0.8f, 0f),
+            hitRadius = 0.5f,
+            hitStopDuration = 0.1f
         },
     };  
 
     private AttackStage currentAttackStage; //当前攻击阶段
-
+    private bool hasHitThisFrame; //是否已经在当前帧执行过攻击判定了，用于控制攻击判定只执行一次，避免在攻击的有效时间内多次触发造成重复伤害等问题
 
 
 
@@ -66,6 +80,7 @@ public class AttackState : FSMState
         player.currentStepIndex = 0; //进入攻击状态时，连击索引设为0，表示第一段攻击       
         PlayComboAnimation();
 
+        hasHitThisFrame = false; //重置攻击判定标记
     }
 
 
@@ -84,6 +99,7 @@ public class AttackState : FSMState
             {
                 player.currentStepIndex =step.nextStepIndex;
                 PlayComboAnimation();
+                hasHitThisFrame = false;
             }
             
         }
@@ -117,6 +133,8 @@ public class AttackState : FSMState
             }
         }
 
+        TryDoHit(); //尝试执行攻击判定
+
     }
 
 
@@ -139,6 +157,8 @@ public class AttackState : FSMState
 
 //=================================================================================================================================================================================================
     
+
+
     /// <summary>
     /// 获取攻击阶段枚举
     /// </summary>
@@ -243,6 +263,29 @@ public class AttackState : FSMState
     /// </summary>
     public void ResetComboIndex() => player.currentStepIndex = 0;    
     
+
+
+    /// <summary>
+    /// 尝试执行攻击判定    
+    /// </summary>
+    public void TryDoHit()
+    {
+        if(player.currentStepIndex >= comboSteps.Length) return;  //索引边界判断，如果越界返回false
+        var attackStep = comboSteps[player.currentStepIndex];
+        if(player.TryGetNormalizedTimeOfAnimation(attackStep.animShortHashName, out var t , attackStep.animLayer) && t >= attackStep.hitTime && !hasHitThisFrame)
+        {
+            if(!hasHitThisFrame && t >= attackStep.hitTime)
+            {
+                hasHitThisFrame = true; //标记本帧已经执行过攻击判定了
+                bool didHit = player.DoAttackHit(attackStep.hitOffset, attackStep.hitRadius); //执行攻击判定，传入偏移和半径参数  
+                if (didHit)
+                {
+
+                    player.DoHitStop(attackStep.hitStopDuration); //执行击中停顿，传入持续时间参数
+                }
+            }
+        }
+    }
 
 
 

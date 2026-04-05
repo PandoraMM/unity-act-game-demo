@@ -43,9 +43,11 @@ public class Player : MonoBehaviour
     public float fallingGravity = 4f; //角色下降的重力
     public float gravityChangeSpeed = 2f; //重力变化量
     public float attackBufferDuration = 0.8f; //攻击缓冲时间
-    public int currentStepIndex  = 0; //当前攻击连段的节点
+    public int currentStepIndex  = 0; ///当前攻击连段的节点
     public GameObject groundCheckObject; //用于做地面检测的物体
     public LayerMask groundLayer;
+    public LayerMask enemyLayer;
+
     public float groundCheckRadius; //检测球的半径范围
 #endregion
 
@@ -57,9 +59,16 @@ public class Player : MonoBehaviour
     private float lastGroundTime = -999f; //记录上一次落地时间
     private float lastJumpInputTime = -999f; //记录上一次按下跳跃的时间
     private float lastAttackInputTime = -999f; //记录上一次按下攻击的时间
+    private float hitStopTimer = 0f; //击中停顿的计时器
+    private bool isHitStop = false; //是否处于击中停顿状态
 
 #endregion
 
+#region 攻击相关Debug
+    [HideInInspector] public Vector2 debugHitCenter; //Debug：这个坐标是用来显示攻击判定范中心点 
+    [HideInInspector] public float   debugHitRadius; //Debug：这个半径是用来显示攻击判定半径范围
+    [HideInInspector] public float   debugHitTimer;  //Debug：这个计时器是用来显示攻击判定范围的    
+#endregion
 
 
     private void Awake()
@@ -113,6 +122,22 @@ public class Player : MonoBehaviour
             isPendingAttackInput = true;       //对攻击输入进行“记账”也就是挂起
         }
 
+        if (isHitStop)//如果处于击中停顿状态
+        {
+            hitStopTimer -= Time.deltaTime; //减少击中停顿的计时器  
+
+            if(hitStopTimer <=0)
+            {
+                isHitStop = false;
+                PAnimator.speed = 1;
+            }
+        }
+
+        //Debug用的，显示攻击判定范围的计时器
+        if (debugHitTimer > 0)
+        {
+            debugHitTimer -= Time.deltaTime;
+        }
     }
 
 
@@ -300,7 +325,6 @@ public class Player : MonoBehaviour
             isPendingAttackInput = false; 
             return false ; 
         }
-
         return true; //除去以上两种情况之外，就返回True
     }
 
@@ -361,6 +385,49 @@ public class Player : MonoBehaviour
         return TryGetNormalizedTimeOfAnimation(animName, out var t , animLayer) && t >= 0.98f;    
     }
 
+
+
+    /// <summary>
+    /// 攻击伤害判定
+    /// </summary>
+    public bool DoAttackHit(Vector2 offset , float radius)
+    {
+        Vector2 center = (Vector2)transform.position + offset * currentDirection;
+
+        //记录调试数据
+        debugHitCenter = center;
+        debugHitRadius = radius;
+        debugHitTimer = 0.1f; // 显示0.1秒（你可以调）
+
+        Collider2D[] hits = Physics2D.OverlapCircleAll(center, radius, enemyLayer);
+
+        bool hasHit = false;
+        
+        foreach (var hit in hits)
+        {
+            hasHit = true;
+            var enemy = hit.GetComponent<HitBox>();
+            if (enemy != null)
+            {
+                enemy.OnHurt();
+            }
+        }
+
+        return hasHit;
+    }
+
+
+
+    /// <summary>
+    /// 实现击中停顿效果
+    /// </summary>
+    /// <param name="duration">停顿时间</param>
+    public void DoHitStop(float duration)
+    {
+        hitStopTimer = duration;
+        isHitStop = true;   
+        PAnimator.speed = 0; //通过将动画速度设置为0来实现击中停顿的效果
+    }
 
 
 
