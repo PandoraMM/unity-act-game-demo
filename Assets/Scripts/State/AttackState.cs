@@ -43,10 +43,10 @@ public class AttackState : FSMState
             attackingEnd   = 0.667f,
             postAttackEnd  = 0.98f, 
             isCanBeInterrupted = true,
-            hitTime = 0.3f,
+            hitTime = 0.2f,
             hitOffset = new Vector2(0.8f, 0f),
             hitRadius = 0.5f,
-            hitStopDuration = 0.05f
+            hitStopDuration = 0.15f
         },
         new(){
             nextStepIndex = -1,   
@@ -57,10 +57,10 @@ public class AttackState : FSMState
             attackingEnd   = 0.9f,
             postAttackEnd  = 0.98f, 
             isCanBeInterrupted = false,
-            hitTime = 0.45f,
+            hitTime = 0.25f,
             hitOffset = new Vector2(0.8f, 0f),
             hitRadius = 0.5f,
-            hitStopDuration = 0.1f
+            hitStopDuration = 0.2f
         },
     };  
 
@@ -280,7 +280,6 @@ public class AttackState : FSMState
                 bool didHit = player.DoAttackHit(attackStep.hitOffset, attackStep.hitRadius); //执行攻击判定，传入偏移和半径参数  
                 if (didHit)
                 {
-
                     player.DoHitStop(attackStep.hitStopDuration); //执行击中停顿，传入持续时间参数
                 }
             }
