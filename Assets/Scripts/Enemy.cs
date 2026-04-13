@@ -22,6 +22,7 @@ public class Enemy : MonoBehaviour
 
     public void OnHurt()
     {
+        Debug.Log("我TM被干了！！！");
         Rigidbody.linearVelocity = direction * force;
         PlayAnimation(AnimClips.actionHurt);
 
