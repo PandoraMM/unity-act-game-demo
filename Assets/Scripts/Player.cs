@@ -29,7 +29,9 @@ public class Player : MonoBehaviour
 
 #region 角色属性（共有变量）
     public float moveMaxSpeed = 2.0f; //移动的最大速率
+    public float attackMoveMaxSpeed = 0.0f; //攻击时的最大移动速率
     public float moveAcceleration = 10.0f; //移动的加速度（注意，这里是标量）
+    public float attackAcceleration = 0.0f; //攻击时的加速度（注意，这里是标量）
     public int   inputDirection = 0; // 输入：水平轴的数值
     public bool  isOnGround = true; //判断是否能进行跳
     public float jumpSpeed = 4; //起跳的速度
@@ -181,6 +183,19 @@ public class Player : MonoBehaviour
         float targetSpeed = inputX * moveMaxSpeed;
         float currentSpeed = Mathf.MoveTowards(PRB2D.linearVelocity.x, targetSpeed, moveAcceleration * Time.fixedDeltaTime);
         PRB2D.linearVelocity = new Vector2(currentSpeed, PRB2D.linearVelocity.y);
+    }
+
+
+
+    /// <summary>
+    /// 攻击时的移动
+    /// </summary>
+    /// <param name="inputX"></param>
+    public void HandleAttackMove(float inputX)
+    {
+        float targetSpeed = inputX * attackMoveMaxSpeed;
+        //float currentSpeed = Mathf.MoveTowards(PRB2D.linearVelocity.x, targetSpeed, attackAcceleration * Time.fixedDeltaTime);
+        PRB2D.linearVelocity = new Vector2(targetSpeed, PRB2D.linearVelocity.y);
     }
 
 
@@ -406,7 +421,7 @@ public class Player : MonoBehaviour
         foreach (var hit in hits)
         {
             hasHit = true;
-            var enemy = hit.GetComponent<HitBox>();
+            var enemy = hit.GetComponent<Enemy>();
             if (enemy != null)
             {
                 enemy.OnHurt();

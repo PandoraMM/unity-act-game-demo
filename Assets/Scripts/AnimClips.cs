@@ -10,5 +10,5 @@ public static class AnimClips
     public static readonly int actionIdle = Animator.StringToHash("idle");     //动画片段-待机
     public static readonly int actionAttack1 = Animator.StringToHash("attack1"); //动画片段-攻击一段
     public static readonly int actionAttack2 = Animator.StringToHash("attack2"); //动画片段-攻击二段
-
+    public static readonly int actionHurt = Animator.StringToHash("hit"); //动画片段-受伤
 }

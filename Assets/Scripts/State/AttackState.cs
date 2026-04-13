@@ -123,14 +123,16 @@ public class AttackState : FSMState
             ResetComboIndex();
             if (player.OnIsCanFlip()) { player.OnFlip(); }
 
-            if (player.inputDirection == 0)
-            {
-                stateMachine.OnChangeState(player.idleState);
-            }
-            else 
-            {
-                stateMachine.OnChangeState(player.moveState);
-            }
+            stateMachine.OnChangeState(player.idleState);
+
+            // if (player.inputDirection == 0)
+            // {
+            //     stateMachine.OnChangeState(player.idleState);
+            // }
+            // else 
+            // {
+            //     stateMachine.OnChangeState(player.moveState);
+            // }
         }
 
         TryDoHit(); //尝试执行攻击判定
@@ -142,6 +144,7 @@ public class AttackState : FSMState
     public override void OnFixedUpdate()
     {
         base.OnFixedUpdate();
+        player.HandleAttackMove(0); //攻击时的移动
     }
 
 
