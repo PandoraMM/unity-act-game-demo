@@ -20,9 +20,10 @@ public class Enemy : MonoBehaviour
 
 
 
-    public void OnHurt()
+    public void OnHurt(Vector2 hitDirection)
     {
         Debug.Log("我TM被干了！！！");
+        direction = ((Vector2)transform.position - hitDirection).normalized; // 确保方向是单位向量
         Rigidbody.linearVelocity = direction * force;
         PlayAnimation(AnimClips.actionHurt);
 

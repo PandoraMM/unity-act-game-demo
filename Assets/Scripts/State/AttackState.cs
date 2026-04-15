@@ -18,11 +18,14 @@ public struct ComboStep
     public float attackingEnd;         //攻击中结束时间
     public float postAttackEnd;        //后摇结束时间
     public bool  isCanBeInterrupted;   //该段攻击是否可以被打断
-
-    public float hitTime;              //攻击命中的时间，触发伤害判定等逻辑
+    public float attackMoveStartTime;  //攻击位移开始时间，攻击动作中从这个时间点开始会有攻击位移的效果
+    public float attackMoveEndTime;    //攻击位移结束时间，攻击动作中从这个时间点开始攻击位移的效果结束，恢复到正常移动的状态
+    public float attackMoveSpeed;      //攻击位移的速度，在攻击位移的时间窗口内，角色会以这个速度进行移动，通常是一个较高的速度，用来表现攻击动作中的冲刺或者推进效果，增加攻击的打击感和流畅度
+    public float hitTime;              //攻击命中的时间，触发伤害判定等逻辑（碰撞框出现的时间点）
     public Vector2 hitOffset;          //攻击判定的中心，调整攻击判定的偏移位置
     public float hitRadius;            //攻击判定的半径，整攻击判定的半径范围
     public float hitStopDuration;      //击中停顿的持续时间，在这个时间内可以实现击中停顿效果，增加打击感等
+
     
 }
 
@@ -43,10 +46,13 @@ public class AttackState : FSMState
             attackingEnd   = 0.667f,
             postAttackEnd  = 0.98f, 
             isCanBeInterrupted = true,
+            attackMoveStartTime = 0,
+            attackMoveEndTime = 0,
+            attackMoveSpeed = 0.0f,
             hitTime = 0.2f,
             hitOffset = new Vector2(0.8f, 0f),
             hitRadius = 0.5f,
-            hitStopDuration = 0.15f
+            hitStopDuration = 0.05f
         },
         new(){
             nextStepIndex = -1,   
@@ -57,6 +63,9 @@ public class AttackState : FSMState
             attackingEnd   = 0.9f,
             postAttackEnd  = 0.98f, 
             isCanBeInterrupted = false,
+            attackMoveStartTime = 0.05f,
+            attackMoveEndTime = 0.25f,
+            attackMoveSpeed = 5f,
             hitTime = 0.25f,
             hitOffset = new Vector2(0.8f, 0f),
             hitRadius = 0.5f,
@@ -144,7 +153,18 @@ public class AttackState : FSMState
     public override void OnFixedUpdate()
     {
         base.OnFixedUpdate();
-        player.HandleAttackMove(0); //攻击时的移动
+
+        TryDoAttackMove(); //尝试执行攻击位移
+        // var step = comboSteps[player.currentStepIndex];
+        // if(currentAttackStage == AttackStage.Attacking)
+        // {
+        //     player.HandleAttackMove(step.attackMoveSpeed); //攻击时的移动
+        // }
+        // else
+        // {
+        //     player.HandleAttackMove(0); //攻击时的移动
+        // }
+
     }
 
 
@@ -289,6 +309,24 @@ public class AttackState : FSMState
         }
     }
 
+
+
+    public void TryDoAttackMove()
+    {
+        if(player.currentStepIndex >= comboSteps.Length) return;  //索引边界判断，如果越界返回false
+        var step = comboSteps[player.currentStepIndex];
+        if(player.TryGetNormalizedTimeOfAnimation(step.animShortHashName, out var t, step.animLayer))
+        {
+            if(t >= step.attackMoveStartTime && t <= step.attackMoveEndTime)
+            {
+                player.HandleAttackMove(step.attackMoveSpeed);
+            }
+            else
+            {
+                player.HandleAttackMove(0); //攻击时的移动
+            }
+        }
+    }
 
 
 }
