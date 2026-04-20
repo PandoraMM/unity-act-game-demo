@@ -631,9 +631,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveMaxSpeed: 6
-  attackMoveMaxSpeed: 0
   moveAcceleration: 40
-  attackAcceleration: 0
   inputDirection: 0
   isOnGround: 1
   jumpSpeed: 7

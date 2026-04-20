@@ -11,10 +11,15 @@ public class PlayerDebug : MonoBehaviour
     public Color groundCheckHitColor;
     public Color attackHitColor = Color.blue;
 
+    //public Vector2 debugHitCenter;
+    //public float debgugHitRadius;
+
     private void OnDrawGizmos()
     {
         OnGroundCheckDebug();
         OnAttackHitDebug();
+
+        //Gizmos.DrawWireSphere(debugHitCenter, debgugHitRadius);
 
     }
 
@@ -40,16 +45,28 @@ public class PlayerDebug : MonoBehaviour
 
     }
 
+
+
     private void OnAttackHitDebug()
     {
         if (player == null) return;
 
+        // ✅ 预览（常驻）
+        if (player.debugShowPreview)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(player.debugPreviewCenter, player.debugPreviewRadius);
+        }
+
+        // ✅ 命中（瞬间）
         if (player.debugHitTimer > 0)
         {
             Gizmos.color = attackHitColor;
             Gizmos.DrawWireSphere(player.debugHitCenter, player.debugHitRadius);
         }
     }
+
+
 
     private void OnGUI()
     {

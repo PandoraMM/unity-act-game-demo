@@ -56,6 +56,7 @@ public class Player : MonoBehaviour
     private bool isPendingAttackInput; //挂起攻击输入的判定（可理解为记账）
     private bool isPendingJumpInput; //挂起跳跃输入的判定
     private int currentDirection = 1; //当前角色的面朝向
+    public  int CurrentDirection => currentDirection; //当前角色的面朝向的公共只读属性   
     private float lastGroundTime = -999f; //记录上一次落地时间
     private float lastJumpInputTime = -999f; //记录上一次按下跳跃的时间
     private float lastAttackInputTime = -999f; //记录上一次按下攻击的时间
@@ -68,6 +69,10 @@ public class Player : MonoBehaviour
     [HideInInspector] public Vector2 debugHitCenter; //Debug：这个坐标是用来显示攻击判定范中心点 
     [HideInInspector] public float   debugHitRadius; //Debug：这个半径是用来显示攻击判定半径范围
     [HideInInspector] public float   debugHitTimer;  //Debug：这个计时器是用来显示攻击判定范围的    
+    //=========攻击预览Debug（常驻）========
+    [HideInInspector] public Vector2 debugPreviewCenter;
+    [HideInInspector] public float debugPreviewRadius;
+    [HideInInspector] public bool debugShowPreview;
 #endregion
 
 
@@ -293,7 +298,7 @@ public class Player : MonoBehaviour
     {
         if (Time.time - jumpEnterTime > miniJumpTime)
         {
-            if (Rising() && !isJumpInputHold)
+            if (Rising() && !isJumpInputHold)   
             {
                 float targetVelocityV = Mathf.MoveTowards(PRB2D.linearVelocity.y , 0 , 80 *Time.fixedDeltaTime); //先写一个魔法数字，让这里的操作手感稍微好一点
 
@@ -403,9 +408,9 @@ public class Player : MonoBehaviour
     /// <summary>
     /// 攻击伤害判定
     /// </summary>
-    public bool DoAttackHit(Vector2 offset , float radius)
+    public bool DoAttackHit(Vector2 offset , float radius , float attackBackForce)
     {
-        Vector2 center = (Vector2)transform.position + offset * currentDirection;
+        Vector2 center = new Vector2(transform.position.x + (offset.x* currentDirection), transform.position.y + offset.y); //根据玩家坐标加上偏移得到攻击判定范围的中心点坐标，注意这里要乘以面朝方向，因为如果玩家朝左边，偏移的x值应该是负的
 
         //记录调试数据
         debugHitCenter = center;
@@ -422,7 +427,7 @@ public class Player : MonoBehaviour
             var enemy = hit.GetComponent<Enemy>();
             if (enemy != null)
             {
-                enemy.OnHurt(transform.position); //把玩家的坐标传给敌人，让敌人知道从哪里受的击，以便计算击退的方向
+                enemy.OnHurt(transform.position , attackBackForce); //把玩家的坐标传给敌人，让敌人知道从哪里受的击，以便计算击退的方向
             }
         }
 

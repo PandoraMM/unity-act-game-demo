@@ -20,11 +20,11 @@ public class Enemy : MonoBehaviour
 
 
 
-    public void OnHurt(Vector2 hitDirection)
+    public void OnHurt(Vector2 hitDirection , float attackBackForce)
     {
         Debug.Log("我TM被干了！！！");
         direction = ((Vector2)transform.position - hitDirection).normalized; // 确保方向是单位向量
-        Rigidbody.linearVelocity = direction * force;
+        Rigidbody.linearVelocity = direction * attackBackForce;
         PlayAnimation(AnimClips.actionHurt);
 
         Invoke(nameof(StopKnockback), 0.1f); // 关键
