@@ -408,7 +408,7 @@ public class Player : MonoBehaviour
     /// <summary>
     /// 攻击伤害判定
     /// </summary>
-    public bool DoAttackHit(Vector2 offset , float radius , float attackBackForce)
+    public bool DoAttackHit(Vector2 offset , float radius , float attackBackForce , float enemyHitStopDuration)
     {
         Vector2 center = new Vector2(transform.position.x + (offset.x* currentDirection), transform.position.y + offset.y); //根据玩家坐标加上偏移得到攻击判定范围的中心点坐标，注意这里要乘以面朝方向，因为如果玩家朝左边，偏移的x值应该是负的
 
@@ -427,7 +427,7 @@ public class Player : MonoBehaviour
             var enemy = hit.GetComponent<Enemy>();
             if (enemy != null)
             {
-                enemy.OnHurt(transform.position , attackBackForce); //把玩家的坐标传给敌人，让敌人知道从哪里受的击，以便计算击退的方向
+                enemy.OnHurt(transform.position , attackBackForce , enemyHitStopDuration); //把玩家的坐标传给敌人，让敌人知道从哪里受的击，以便计算击退的方向
             }
         }
 

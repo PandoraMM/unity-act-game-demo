@@ -25,7 +25,8 @@ public struct ComboStep
     public float hitTime;              //攻击命中的时间，触发伤害判定等逻辑（碰撞框出现的时间点）
     public Vector2 hitOffset;          //攻击判定的中心，调整攻击判定的偏移位置
     public float hitRadius;            //攻击判定的半径，整攻击判定的半径范围
-    public float hitStopDuration;      //击中停顿的持续时间，在这个时间内可以实现击中停顿效果，增加打击感等
+    public float hitStopDuration;      //主角击中停顿的持续时间，在这个时间内可以实现击中停顿效果，增加打击感等
+    public float enemyHitStopDuration; //敌人被击停顿的持续时间，在这个时间内敌人会进入击中停顿状态，增加打击感等
 
     
 }
@@ -54,7 +55,9 @@ public class AttackState : FSMState
             hitTime = 0.24f,
             hitOffset = new Vector2(1.2f, 1f),
             hitRadius = 0.7f,
-            hitStopDuration = 0.05f
+            hitStopDuration = 0.05f,
+            enemyHitStopDuration = 0.05f
+
         },
         new(){
             nextStepIndex = -1,   
@@ -72,7 +75,8 @@ public class AttackState : FSMState
             hitTime = 0.25f,
             hitOffset = new Vector2(1.5f, 1.2f),
             hitRadius = 0.85f,
-            hitStopDuration = 0.2f
+            hitStopDuration = 0.1f,
+            enemyHitStopDuration = 0.05f
         },
     };  
 
@@ -136,17 +140,7 @@ public class AttackState : FSMState
             if (player.OnIsCanFlip()) { player.OnFlip(); }
 
             stateMachine.OnChangeState(player.idleState);
-
-            // if (player.inputDirection == 0)
-            // {
-            //     stateMachine.OnChangeState(player.idleState);
-            // }
-            // else 
-            // {
-            //     stateMachine.OnChangeState(player.moveState);
-            // }
         }
-
 
         UpdateAttackDebugPreview();
     }
@@ -295,7 +289,7 @@ public class AttackState : FSMState
             if(!hasHitThisFrame && t >= attackStep.hitTime)
             {
                 hasHitThisFrame = true; //标记本帧已经执行过攻击判定了
-                bool didHit = player.DoAttackHit(attackStep.hitOffset, attackStep.hitRadius , attackStep.attackBackForce); //执行攻击判定，传入偏移和半径参数  
+                bool didHit = player.DoAttackHit(attackStep.hitOffset, attackStep.hitRadius , attackStep.attackBackForce, attackStep.enemyHitStopDuration); //执行攻击判定，传入偏移和半径参数  
                 if (didHit)
                 {
                     player.DoHitStop(attackStep.hitStopDuration); //执行击中停顿，传入持续时间参数
@@ -306,6 +300,9 @@ public class AttackState : FSMState
 
 
 
+    /// <summary>
+    /// 尝试执行攻击位移
+    /// </summary>
     public void TryDoAttackMove()
     {
         if(player.currentStepIndex >= comboSteps.Length) return;  //索引边界判断，如果越界返回false
