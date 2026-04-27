@@ -443,8 +443,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 321d6f8338cfaf54c898505a6e131549, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HitBox
-  force: 5
-  direction: {x: 1, y: 0}
+  pendingHitVelocity: {x: 0, y: 0}
 --- !u!50 &864259941
 Rigidbody2D:
   serializedVersion: 5
@@ -481,7 +480,7 @@ Transform:
   m_GameObject: {fileID: 864259938}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.46, y: 0.5, z: 0}
+  m_LocalPosition: {x: -5.55, y: 0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -611,7 +610,7 @@ Transform:
   m_GameObject: {fileID: 1011364915}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.5, z: 0}
+  m_LocalPosition: {x: -8.01, y: 0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -657,6 +656,9 @@ MonoBehaviour:
   debugHitCenter: {x: 0, y: 0}
   debugHitRadius: 0
   debugHitTimer: 0
+  debugPreviewCenter: {x: 0, y: 0}
+  debugPreviewRadius: 0
+  debugShowPreview: 0
 --- !u!70 &1011364919
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

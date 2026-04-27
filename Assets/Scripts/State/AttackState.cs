@@ -22,7 +22,8 @@ public struct ComboStep
     public float attackMoveEndTime;    //攻击位移结束时间，攻击动作中从这个时间点开始攻击位移的效果结束，恢复到正常移动的状态
     public float attackMoveSpeed;      //攻击位移的速度，在攻击位移的时间窗口内，角色会以这个速度进行移动，通常是一个较高的速度，用来表现攻击动作中的冲刺或者推进效果，增加攻击的打击感和流畅度
     public float attackBackForce;      //攻击的击退力道，敌人被攻击时会根据这个力道进行击退，通常是一个较大的数值，用来表现攻击的强烈程度和对敌人的影响力
-    public float hitTime;              //攻击命中的时间，触发伤害判定等逻辑（碰撞框出现的时间点）
+    public float hitStartTime;         //攻击判定开始时间，攻击动作中从这个时间点开始会有攻击判定的效果，通常是一个较早的时间点，用来表现攻击动作中的挥出武器或者身体的一瞬间，这个时间点之后敌人如果进入攻击判定范围就会被判定为命中
+    public float hitEndTime;           //攻击判定结束时间，攻击动作中从这个时间点开始攻击判定的效果结束，通常是一个较晚的时间点，用来表现攻击动作中的收回武器或者身体的一瞬间，这个时间点之后敌人如果进入攻击判定范围就不会被判定为命中
     public Vector2 hitOffset;          //攻击判定的中心，调整攻击判定的偏移位置
     public float hitRadius;            //攻击判定的半径，整攻击判定的半径范围
     public float hitStopDuration;      //主角击中停顿的持续时间，在这个时间内可以实现击中停顿效果，增加打击感等
@@ -44,15 +45,16 @@ public class AttackState : FSMState
             animShortHashName = AnimClips.actionAttack1, 
             animLayer = AnimClips.baseLayer,
             comboWindowEnd = 0.9f,
-            preAttackEnd   = 0.22f,
-            attackingEnd   = 0.6f,
+            preAttackEnd   = 0.29f,
+            attackingEnd   = 0.4f,
             postAttackEnd  = 0.98f, 
             isCanBeInterrupted = true,
-            attackMoveStartTime = 0.22f,
-            attackMoveEndTime = 0.32f,
-            attackMoveSpeed = 2f,
+            attackMoveStartTime = 0.29f,
+            attackMoveEndTime = 0.4f,
+            attackMoveSpeed = 3f,
             attackBackForce = 5f,
-            hitTime = 0.24f,
+            hitStartTime = 0.3f,
+            hitEndTime = 0.4f,
             hitOffset = new Vector2(1.2f, 1f),
             hitRadius = 0.7f,
             hitStopDuration = 0.05f,
@@ -72,7 +74,8 @@ public class AttackState : FSMState
             attackMoveEndTime = 0.25f,
             attackMoveSpeed = 5f,
             attackBackForce = 18f,
-            hitTime = 0.25f,
+            hitStartTime = 0.2f,
+            hitEndTime = 0.32f,
             hitOffset = new Vector2(1.5f, 1.2f),
             hitRadius = 0.85f,
             hitStopDuration = 0.1f,
@@ -81,7 +84,8 @@ public class AttackState : FSMState
     };  
 
     private AttackStage currentAttackStage; //当前攻击阶段
-    private bool hasHitThisFrame; //是否已经在当前帧执行过攻击判定了，用于控制攻击判定只执行一次，避免在攻击的有效时间内多次触发造成重复伤害等问题
+    private bool hasTriggeredHitStop = false;//是否已经触发过击中停顿了，避免在攻击的有效时间内多次触发击中停顿等问题
+    private HashSet<Enemy> hitEnemies = new HashSet<Enemy>(); //已经被当前攻击打过的敌人集合，用于记录已经被打过的敌人，避免在攻击的有效时间内多次触发对同一个敌人造成重复伤害等问题
 
 
 
@@ -95,8 +99,7 @@ public class AttackState : FSMState
 
         player.currentStepIndex = 0; //进入攻击状态时，连击索引设为0，表示第一段攻击       
         PlayComboAnimation();
-
-        hasHitThisFrame = false; //重置攻击判定标记
+        hitEnemies.Clear(); //清空已击中的敌人集合
     }
 
 
@@ -115,7 +118,6 @@ public class AttackState : FSMState
             {
                 player.currentStepIndex =step.nextStepIndex;
                 PlayComboAnimation();
-                hasHitThisFrame = false;
             }
             
         }
@@ -282,20 +284,26 @@ public class AttackState : FSMState
     /// </summary>
     public void TryDoHit()
     {
+
         if(player.currentStepIndex >= comboSteps.Length) return;  //索引边界判断，如果越界返回false
         var attackStep = comboSteps[player.currentStepIndex];
-        if(player.TryGetNormalizedTimeOfAnimation(attackStep.animShortHashName, out var t , attackStep.animLayer) && t >= attackStep.hitTime && !hasHitThisFrame)
+        if(player.TryGetNormalizedTimeOfAnimation(attackStep.animShortHashName, out var t , attackStep.animLayer))
         {
-            if(!hasHitThisFrame && t >= attackStep.hitTime)
+            if(t >= attackStep.hitStartTime && t <= attackStep.hitEndTime) //如果本帧还没有执行过攻击判定，并且当前时间在攻击判定的时间窗口内
             {
-                hasHitThisFrame = true; //标记本帧已经执行过攻击判定了
-                bool didHit = player.DoAttackHit(attackStep.hitOffset, attackStep.hitRadius , attackStep.attackBackForce, attackStep.enemyHitStopDuration); //执行攻击判定，传入偏移和半径参数  
-                if (didHit)
+                //执行攻击判定，传入偏移和半径参数，并且把已经被打过的敌人集合传进去，供函数内部进行判断和记录
+                bool didHit = player.DoAttackHitContinuous(attackStep.hitOffset, attackStep.hitRadius , attackStep.attackBackForce, attackStep.enemyHitStopDuration, hitEnemies);   
+                
+                if (didHit && !hasTriggeredHitStop)
                 {
+                    hasTriggeredHitStop = true;
                     player.DoHitStop(attackStep.hitStopDuration); //执行击中停顿，传入持续时间参数
                 }
             }
         }
+
+        //hasTriggeredHitStop = false; //如果不在攻击判定时间窗口内，则重置击中停顿触发标志，准备下一次攻击判定的触发
+        hitEnemies.Clear(); //如果不在攻击判定时间窗口内，则清空已击中的敌人集合，准备下一次攻击判定的记录
     }
 
 

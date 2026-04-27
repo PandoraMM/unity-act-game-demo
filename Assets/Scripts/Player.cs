@@ -406,11 +406,17 @@ public class Player : MonoBehaviour
 
 
     /// <summary>
-    /// 攻击伤害判定
+    /// 执行攻击判定的函数，连续伤害版本!!!
     /// </summary>
-    public bool DoAttackHit(Vector2 offset , float radius , float attackBackForce , float enemyHitStopDuration)
+    /// <param name="offset">碰撞盒子的中心偏移</param>
+    /// <param name="radius">碰撞盒子的半径</param>
+    /// <param name="attackBackForce">攻击后退力</param>
+    /// <param name="enemyHitStopDuration">敌人击中停顿时间</param>
+    /// <param name="hitEnemies">已击中的敌人集合</param>
+    /// <returns></returns>
+    public bool DoAttackHitContinuous(Vector2 offset , float radius , float attackBackForce , float enemyHitStopDuration , HashSet<Enemy> hitEnemies)
     {
-        Vector2 center = new Vector2(transform.position.x + (offset.x* currentDirection), transform.position.y + offset.y); //根据玩家坐标加上偏移得到攻击判定范围的中心点坐标，注意这里要乘以面朝方向，因为如果玩家朝左边，偏移的x值应该是负的
+        Vector2 center = new (transform.position.x + (offset.x* currentDirection), transform.position.y + offset.y); //根据玩家坐标加上偏移得到攻击判定范围的中心点坐标，注意这里要乘以面朝方向，因为如果玩家朝左边，偏移的x值应该是负的
 
         //记录调试数据
         debugHitCenter = center;
@@ -419,14 +425,15 @@ public class Player : MonoBehaviour
 
         Collider2D[] hits = Physics2D.OverlapCircleAll(center, radius, enemyLayer);
 
-        bool hasHit = false;
+        bool hasHit = false; //这个变量用来记录本次攻击判定是否至少打到了一个敌人，如果打到了至少一个敌人，就可以触发击中停顿的效果了
         
         foreach (var hit in hits)
         {
             hasHit = true;
             var enemy = hit.GetComponent<Enemy>();
-            if (enemy != null)
+            if (enemy != null && !hitEnemies.Contains(enemy)) //判断：如果敌人不为空 且 敌人没有被打过（Contains表示“包含”）
             {
+                hitEnemies.Add(enemy); //将这个没被打过的敌人添加到哈希集合中，以记录已经打过了，避免重复伤害
                 enemy.OnHurt(transform.position , attackBackForce , enemyHitStopDuration); //把玩家的坐标传给敌人，让敌人知道从哪里受的击，以便计算击退的方向
             }
         }
