@@ -7,7 +7,7 @@ public class Enemy : MonoBehaviour
     public Animator EAnimator { get; set; }
     public Rigidbody2D Rigidbody { get; set; }
     private Vector2 direction = Vector2.right; // 受击时的推力方向
-    private float enemyHitStopTimer = 0f; // 击中停顿的计时器
+    private float enemyHitStopTimer; // 击中停顿的计时器
     private bool isEnemyHitStop = false; // 是否处于击中停顿状态
     public Vector2 pendingHitVelocity; // 存储即将受到的攻击的速度
 
@@ -70,14 +70,14 @@ public class Enemy : MonoBehaviour
         //1.先击退：计算击退方向，敌人会朝着远离攻击来源的方向被击退，所以用敌人当前坐标减去攻击来源坐标得到一个向量，然后归一化这个向量得到方向
         direction = ((Vector2)transform.position - hitDirection).normalized;
 
-        //2.再击中停顿：调用EnemyHitStop方法，传入敌人击中停顿的持续时间参数，让敌人进入击中停顿状态，增加打击感等
-        EnemyHitStop(enemyHitStopDuration);
-
-        //3.存储攻击的速度：将击退方向乘以攻击的推力得到一个速度向量，存储在pendingHitVelocity变量中，在击中停顿结束后再应用这个速度，实现击退效果  
+        //2.存储攻击的速度：将击退方向乘以攻击的推力得到一个速度向量，存储在pendingHitVelocity变量中，在击中停顿结束后再应用这个速度，实现击退效果  
         pendingHitVelocity = direction * attackBackForce;
 
-        //4.播放受伤动画：调用PlayAnimation方法，传入受伤动画片段的哈希值、动画层级和过渡持续时间参数，播放受伤动画，并将动画速度设置为0，确保动画停在第一帧，增加击中停顿的效果
+        //3.播放受伤动画：调用PlayAnimation方法，传入受伤动画片段的哈希值、动画层级和过渡持续时间参数，播放受伤动画，并将动画速度设置为0，确保动画停在第一帧，增加击中停顿的效果
         PlayAnimation(AnimClips.actionHurt, 0, 0f);
+
+        //4.再击中停顿：调用EnemyHitStop方法，传入敌人击中停顿的持续时间参数，让敌人进入击中停顿状态，增加打击感等
+        EnemyHitStop(enemyHitStopDuration);
     }
 
 

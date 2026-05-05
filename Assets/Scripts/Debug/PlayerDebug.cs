@@ -17,9 +17,7 @@ public class PlayerDebug : MonoBehaviour
     private void OnDrawGizmos()
     {
         OnGroundCheckDebug();
-        OnAttackHitDebug();
-
-        //Gizmos.DrawWireSphere(debugHitCenter, debgugHitRadius);
+        DrawAttackHitBoxRuntime();
 
     }
 
@@ -43,27 +41,6 @@ public class PlayerDebug : MonoBehaviour
         }
 
 
-    }
-
-
-
-    private void OnAttackHitDebug()
-    {
-        if (player == null) return;
-
-        // ✅ 预览（常驻）
-        if (player.debugShowPreview)
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(player.debugPreviewCenter, player.debugPreviewRadius);
-        }
-
-        // ✅ 命中（瞬间）
-        if (player.debugHitTimer > 0)
-        {
-            Gizmos.color = attackHitColor;
-            Gizmos.DrawWireSphere(player.debugHitCenter, player.debugHitRadius);
-        }
     }
 
 
@@ -97,6 +74,29 @@ public class PlayerDebug : MonoBehaviour
 
         }
 
+    }
+
+
+
+    private void DrawAttackHitBoxRuntime()
+    {
+        if (player == null) return;
+        if (player.attackState == null) return;
+        var attackState = player.attackState;
+        
+        if (player.currentStepIndex >= attackState.comboSteps.Length) return;
+        var step = attackState.comboSteps[player.currentStepIndex];
+
+        // 拿动画时间
+        if (!player.TryGetNormalizedTimeOfAnimation(step.animShortHashName, out var t)) return;
+
+        // 👉 判断是否在攻击判定窗口
+        if (t < step.hitStartTime || t > step.hitEndTime) return;
+
+        // 👉 计算攻击中心
+        Vector2 center = new Vector2(player.transform.position.x + (step.hitOffset.x * player.CurrentDirection),player.transform.position.y + step.hitOffset.y);
+        Gizmos.color = attackHitColor;
+        Gizmos.DrawWireSphere(center, step.hitRadius);
     }
 
 }

@@ -65,15 +65,6 @@ public class Player : MonoBehaviour
 
 #endregion
 
-#region 攻击相关Debug
-    [HideInInspector] public Vector2 debugHitCenter; //Debug：这个坐标是用来显示攻击判定范中心点 
-    [HideInInspector] public float   debugHitRadius; //Debug：这个半径是用来显示攻击判定半径范围
-    [HideInInspector] public float   debugHitTimer;  //Debug：这个计时器是用来显示攻击判定范围的    
-    //=========攻击预览Debug（常驻）========
-    [HideInInspector] public Vector2 debugPreviewCenter;
-    [HideInInspector] public float debugPreviewRadius;
-    [HideInInspector] public bool debugShowPreview;
-#endregion
 
 
     private void Awake()
@@ -136,12 +127,6 @@ public class Player : MonoBehaviour
                 isHitStop = false;
                 PAnimator.speed = 1;
             }
-        }
-
-        //Debug用的，显示攻击判定范围的计时器
-        if (debugHitTimer > 0)
-        {
-            debugHitTimer -= Time.deltaTime;
         }
     }
 
@@ -417,14 +402,7 @@ public class Player : MonoBehaviour
     public bool DoAttackHitContinuous(Vector2 offset , float radius , float attackBackForce , float enemyHitStopDuration , HashSet<Enemy> hitEnemies)
     {
         Vector2 center = new (transform.position.x + (offset.x* currentDirection), transform.position.y + offset.y); //根据玩家坐标加上偏移得到攻击判定范围的中心点坐标，注意这里要乘以面朝方向，因为如果玩家朝左边，偏移的x值应该是负的
-
-        //记录调试数据
-        debugHitCenter = center;
-        debugHitRadius = radius;
-        debugHitTimer = 0.1f; // 显示0.1秒（你可以调）
-
         Collider2D[] hits = Physics2D.OverlapCircleAll(center, radius, enemyLayer);
-
         bool hasHit = false; //这个变量用来记录本次攻击判定是否至少打到了一个敌人，如果打到了至少一个敌人，就可以触发击中停顿的效果了
         
         foreach (var hit in hits)

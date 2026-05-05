@@ -67,7 +67,7 @@ public class AttackState : FSMState
             animLayer = AnimClips.baseLayer,
             comboWindowEnd = 0.00f, 
             preAttackEnd   = 0.44f,
-            attackingEnd   = 0.90f,
+            attackingEnd   = 0.9f,
             postAttackEnd  = 0.98f, 
             isCanBeInterrupted = false,
             attackMoveStartTime = 0.05f,
@@ -79,7 +79,7 @@ public class AttackState : FSMState
             hitOffset = new Vector2(1.5f, 1.2f),
             hitRadius = 0.85f,
             hitStopDuration = 0.1f,
-            enemyHitStopDuration = 0.05f
+            enemyHitStopDuration = 0.1f
         },
     };  
 
@@ -100,6 +100,7 @@ public class AttackState : FSMState
         player.currentStepIndex = 0; //进入攻击状态时，连击索引设为0，表示第一段攻击       
         PlayComboAnimation();
         hitEnemies.Clear(); //清空已击中的敌人集合
+        hasTriggeredHitStop = false; //重置击中停顿触发标志
     }
 
 
@@ -118,6 +119,9 @@ public class AttackState : FSMState
             {
                 player.currentStepIndex =step.nextStepIndex;
                 PlayComboAnimation();
+
+                hasTriggeredHitStop = false;//重置击中停顿触发标志，准备下一段攻击的判定
+                hitEnemies.Clear();//清空已击中的敌人集合，准备下一段攻击的记录
             }
             
         }
@@ -143,8 +147,6 @@ public class AttackState : FSMState
 
             stateMachine.OnChangeState(player.idleState);
         }
-
-        UpdateAttackDebugPreview();
     }
 
 
@@ -153,8 +155,8 @@ public class AttackState : FSMState
     {
         base.OnFixedUpdate();
 
-        TryDoAttackMove(); //尝试执行攻击位移
-        TryDoHit(); //尝试执行攻击判定  
+        TryDoAttackMove();
+        TryDoHit(); 
 
     }
 
@@ -185,7 +187,6 @@ public class AttackState : FSMState
         if     (t <  attackStep.preAttackEnd ) {return AttackStage.PreAttack; } //前摇阶段
         else if(t <  attackStep.attackingEnd ) {return AttackStage.Attacking; } //攻击阶段
         else if(t <= attackStep.postAttackEnd) {return AttackStage.PostAttack;} //后摇阶段 
-
         return AttackStage.None; //都不是则返回None 
     }
 
@@ -303,7 +304,7 @@ public class AttackState : FSMState
         }
 
         //hasTriggeredHitStop = false; //如果不在攻击判定时间窗口内，则重置击中停顿触发标志，准备下一次攻击判定的触发
-        hitEnemies.Clear(); //如果不在攻击判定时间窗口内，则清空已击中的敌人集合，准备下一次攻击判定的记录
+        //hitEnemies.Clear(); //如果不在攻击判定时间窗口内，则清空已击中的敌人集合，准备下一次攻击判定的记录
     }
 
 
@@ -327,33 +328,5 @@ public class AttackState : FSMState
             }
         }
     }
-
-
-
-    /// <summary>
-    /// 用于Debug，进行实时预览调试的方法
-    /// </summary>
-    void UpdateAttackDebugPreview()
-    {
-        if(player.currentStepIndex >= comboSteps.Length)
-        {
-            player.debugShowPreview = false;
-            return;
-        }
-
-        var step = comboSteps[player.currentStepIndex];
-
-        Vector2 center = new Vector2(
-            player.transform.position.x + (step.hitOffset.x * player.CurrentDirection),
-            player.transform.position.y + step.hitOffset.y
-        );
-
-        player.debugPreviewCenter = center;
-        player.debugPreviewRadius = step.hitRadius;
-        player.debugShowPreview = true;
-    }
-
-
-
 
 }
