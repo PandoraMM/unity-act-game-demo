@@ -643,7 +643,7 @@ MonoBehaviour:
   apexGravity: 0.5
   fallingGravity: 4
   gravityChangeSpeed: 7
-  attackBufferDuration: 0.5
+  attackBufferDuration: 0.2
   currentStepIndex: 0
   groundCheckObject: {fileID: 1862343254}
   groundLayer:
