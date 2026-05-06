@@ -32,13 +32,12 @@ public class Enemy : MonoBehaviour
         if (isEnemyHitStop) // 如果处于击中停顿状态
         {
             enemyHitStopTimer -= Time.deltaTime; // 减少击中停顿的计时器
-            Rigidbody.linearVelocity = Vector2.zero;// 将敌人的速度设置为0，确保敌人停在原地不动
 
             if (enemyHitStopTimer <= 0)// 如果击中停顿的时间结束了
             {
                 isEnemyHitStop = false;
                 EAnimator.speed = 1;
-
+                Rigidbody.simulated = true; // 恢复物理模拟
                 Rigidbody.linearVelocity = pendingHitVelocity; // 在击中停顿结束后应用存储的攻击速度，实现击退效果
                 Invoke(nameof(StopKnockback), 0.1f); // 在击中停顿结束后0.1秒调用StopKnockback方法，确保敌人不会被击退过远
             }
@@ -90,6 +89,8 @@ public class Enemy : MonoBehaviour
     {
         isEnemyHitStop = true;
         enemyHitStopTimer = duration;
+        Rigidbody.linearVelocity = Vector2.zero;// 将敌人的速度设置为0，确保敌人停在原地不动
+        Rigidbody.simulated = false; // 关闭物理模拟
         EAnimator.speed = 0;
     }
 

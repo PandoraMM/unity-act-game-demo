@@ -25,10 +25,8 @@ public class IdleState : GroundState
 
     public override void OnUpdate()
     {
-
-
         base.OnUpdate();
-
+        player.IsInHitStop(); 
         if (player.inputDirection != 0)
         {
             stateMachine.OnChangeState(player.moveState);
@@ -40,6 +38,8 @@ public class IdleState : GroundState
     {
         base.OnFixedUpdate();
         player.HandleMove(0);
+
+        player.IsInHitStop(); 
     }
 
 

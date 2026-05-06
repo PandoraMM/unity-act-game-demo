@@ -28,6 +28,7 @@ public class MoveState : GroundState
     {
 
         base.OnUpdate();
+        player.IsInHitStop();
 
         if (player.OnIsCanFlip())
         {
@@ -44,8 +45,8 @@ public class MoveState : GroundState
     public override void OnFixedUpdate()
     {
         base.OnFixedUpdate();
-
         player.HandleMove(player.inputDirection);
+        player.IsInHitStop();
     }
 
 }

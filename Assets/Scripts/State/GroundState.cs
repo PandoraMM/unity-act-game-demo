@@ -20,6 +20,7 @@ public class GroundState : FSMState
     public override void OnUpdate()
     {
         base.OnUpdate();
+        player.IsInHitStop(); 
 
         //=======================跳跃状态切换=======================
         if (player.IsCanJump() && player.IsCoyoteTime())
@@ -40,7 +41,11 @@ public class GroundState : FSMState
 
 
 
-    public override void OnFixedUpdate(){base.OnFixedUpdate();}
+    public override void OnFixedUpdate()
+    {
+        base.OnFixedUpdate();
+        player.IsInHitStop(); 
+    }
 
     
 }

@@ -45,10 +45,10 @@ public class Player : MonoBehaviour
     public float attackBufferDuration = 0.8f; //攻击缓冲时间
     public int currentStepIndex  = 0; ///当前攻击连段的节点
     public GameObject groundCheckObject; //用于做地面检测的物体
-    public LayerMask groundLayer;
-    public LayerMask enemyLayer;
-
+    public LayerMask groundLayer; //地面所在的图层
+    public LayerMask enemyLayer;    //敌人所在的图层
     public float groundCheckRadius; //检测球的半径范围
+    public bool isHitStop = false; //是否处于击中停顿状态
 #endregion
 
 #region 其他字段（私有变量）
@@ -61,7 +61,7 @@ public class Player : MonoBehaviour
     private float lastJumpInputTime = -999f; //记录上一次按下跳跃的时间
     private float lastAttackInputTime = -999f; //记录上一次按下攻击的时间
     private float hitStopTimer = 0f; //击中停顿的计时器
-    private bool isHitStop = false; //是否处于击中停顿状态
+
 
 #endregion
 
@@ -125,7 +125,7 @@ public class Player : MonoBehaviour
             if(hitStopTimer <=0)
             {
                 isHitStop = false;
-                PAnimator.speed = 1;
+                RecoverFromeHitStop(); //恢复角色的正常状态
             }
         }
     }
@@ -139,6 +139,12 @@ public class Player : MonoBehaviour
         if (isOnGround) { lastGroundTime = Time.time; } //记录上一次落地的时间，用于做土狼时间的时间判断依据
 
         stateMachine.CurrentState.OnFixedUpdate();
+
+        if(isHitStop) //如果处于击中停顿状态，在FixedUpdate中持续将角色的速度设置为0，来确保角色在停顿期间完全停在原地不动，不受任何外力的影响
+        {
+            PRB2D.linearVelocity = Vector2.zero;
+            return; //直接返回，跳过后续的逻辑，确保在击中停顿状态下角色完全不受任何外力的影响
+        }
     }
 
 
@@ -428,10 +434,28 @@ public class Player : MonoBehaviour
     public void DoHitStop(float duration)
     {
         hitStopTimer = duration;
-        isHitStop = true;   
+        isHitStop = true;  
         PAnimator.speed = 0; //通过将动画速度设置为0来实现击中停顿的效果
     }
 
+
+
+    /// <summary>
+    /// 恢复HitStop的方法，在击中停顿结束后调用，恢复角色的正常状态，包括物理模拟和动画播放等，注意！这个方法
+    /// 主要是在Update中生效，所以不会存在物理速度相关的逻辑，这些逻辑需要在FixedUpdate中计算
+    /// </summary>
+    public void RecoverFromeHitStop()
+    {
+        PAnimator.speed = 1; //恢复动画播放
+    }
+
+
+
+    /// <summary>
+    /// 判断：角色是否处于击中停顿状态
+    /// </summary>
+    /// <returns></returns>
+    public bool IsInHitStop() => isHitStop;
 
 
 

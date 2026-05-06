@@ -16,6 +16,7 @@ public class JumpState : FSMState
 
     public override void OnEnter()
     {
+        base.OnEnter();
         jumpEnterTime = Time.time;
 
         player.Jump();
@@ -26,6 +27,9 @@ public class JumpState : FSMState
 
     public override void OnUpdate()
     {
+        base.OnUpdate();
+        player.IsInHitStop();
+
         // 至少等一小段时间，避免地面判定抖动（等待物理更新）
         if (Time.time - jumpEnterTime < minAirTime) return;
 
@@ -48,6 +52,9 @@ public class JumpState : FSMState
 
     public override void OnFixedUpdate()
     {
+        base.OnFixedUpdate();
+        player.IsInHitStop();
+
         float targetGravity = player.GetTargetGravity();
         player.ApplyGravity(targetGravity);
         player.HandleInAirMove(player.inputDirection);
@@ -60,6 +67,8 @@ public class JumpState : FSMState
 
     public override void OnExit()
     {
+        base.OnExit();
+        
         player.PRB2D.gravityScale = player.defaultGravity;
     }
 

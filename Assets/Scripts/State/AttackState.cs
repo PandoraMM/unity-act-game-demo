@@ -78,8 +78,8 @@ public class AttackState : FSMState
             hitEndTime = 0.32f,
             hitOffset = new Vector2(1.5f, 1.2f),
             hitRadius = 0.85f,
-            hitStopDuration = 0.1f,
-            enemyHitStopDuration = 0.1f
+            hitStopDuration = 0.15f,
+            enemyHitStopDuration = 0.15f
         },
     };  
 
@@ -108,7 +108,7 @@ public class AttackState : FSMState
     public override void OnUpdate()
     {
         base.OnUpdate();
-
+        player.IsInHitStop(); 
         currentAttackStage = GetCurrentAttackStage(); //获取当前攻击阶段然后进行缓存，后续的逻辑都使用缓存的值，避免多次调用函数带来性能损耗和获取带来的动画同步不确定性
 
         if(CanInputNextCombo() && player.OnIsAttackRequest())//检测到处于连击输入窗口内且有攻击输入请求  
@@ -154,7 +154,7 @@ public class AttackState : FSMState
     public override void OnFixedUpdate()
     {
         base.OnFixedUpdate();
-
+        player.IsInHitStop(); 
         TryDoAttackMove();
         TryDoHit(); 
 
@@ -285,7 +285,7 @@ public class AttackState : FSMState
     /// </summary>
     public void TryDoHit()
     {
-
+        player.IsInHitStop(); 
         if(player.currentStepIndex >= comboSteps.Length) return;  //索引边界判断，如果越界返回false
         var attackStep = comboSteps[player.currentStepIndex];
         if(player.TryGetNormalizedTimeOfAnimation(attackStep.animShortHashName, out var t , attackStep.animLayer))
@@ -314,6 +314,7 @@ public class AttackState : FSMState
     /// </summary>
     public void TryDoAttackMove()
     {
+        player.IsInHitStop(); 
         if(player.currentStepIndex >= comboSteps.Length) return;  //索引边界判断，如果越界返回false
         var step = comboSteps[player.currentStepIndex];
         if(player.TryGetNormalizedTimeOfAnimation(step.animShortHashName, out var t, step.animLayer))
