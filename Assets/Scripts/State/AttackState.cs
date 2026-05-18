@@ -108,7 +108,7 @@ public class AttackState : FSMState
     public override void OnUpdate()
     {
         base.OnUpdate();
-        player.IsInHitStop(); 
+
         currentAttackStage = GetCurrentAttackStage(); //获取当前攻击阶段然后进行缓存，后续的逻辑都使用缓存的值，避免多次调用函数带来性能损耗和获取带来的动画同步不确定性
 
         if(CanInputNextCombo() && player.OnIsAttackRequest())//检测到处于连击输入窗口内且有攻击输入请求  
@@ -147,6 +147,10 @@ public class AttackState : FSMState
 
             stateMachine.OnChangeState(player.idleState);
         }
+
+        player.IsInHitStop();
+
+
     }
 
 
@@ -154,10 +158,10 @@ public class AttackState : FSMState
     public override void OnFixedUpdate()
     {
         base.OnFixedUpdate();
-        player.IsInHitStop(); 
+
         TryDoAttackMove();
         TryDoHit(); 
-
+        player.IsInHitStop(); 
     }
 
 
@@ -180,13 +184,15 @@ public class AttackState : FSMState
     /// </summary>
     public AttackStage GetCurrentAttackStage()
     {
+        Debug.Log($"获取当前攻击阶段，当前连击索引：{player.currentStepIndex}");
         if(player.currentStepIndex >= comboSteps.Length) {return AttackStage.None;}
         var attackStep = comboSteps[player.currentStepIndex]; 
         if(!player.TryGetNormalizedTimeOfAnimation(attackStep.animShortHashName, out var t, attackStep.animLayer)){return AttackStage.None;}//获取当前动画归一化时间失败，返回None
 
         if     (t <  attackStep.preAttackEnd ) {return AttackStage.PreAttack; } //前摇阶段
         else if(t <  attackStep.attackingEnd ) {return AttackStage.Attacking; } //攻击阶段
-        else if(t <= attackStep.postAttackEnd) {return AttackStage.PostAttack;} //后摇阶段 
+        else if(t <= attackStep.postAttackEnd) {return AttackStage.PostAttack;} //后摇阶段
+
         return AttackStage.None; //都不是则返回None 
     }
 
@@ -199,6 +205,7 @@ public class AttackState : FSMState
     {
         var attackStep = comboSteps[player.currentStepIndex];
         player.PlayAnimation(attackStep.animShortHashName, attackStep.animLayer);
+        Debug.Log($"播放攻击动画：{attackStep.animShortHashName}，索引：{player.currentStepIndex}");
     }
 
 
@@ -251,7 +258,6 @@ public class AttackState : FSMState
     /// <returns></returns>
     public StateIntention GetAttackInterrupted(StateIntention intentionType)
     {
-
         if(player.currentStepIndex >= comboSteps.Length) return StateIntention.None;  //索引边界判断，如果越界返回false    
         var attackStep = comboSteps[player.currentStepIndex];
         if(attackStep.isCanBeInterrupted == false) return StateIntention.None;  //数据判断，如果该段攻击不允许被打断则返回false
@@ -302,9 +308,6 @@ public class AttackState : FSMState
                 }
             }
         }
-
-        //hasTriggeredHitStop = false; //如果不在攻击判定时间窗口内，则重置击中停顿触发标志，准备下一次攻击判定的触发
-        //hitEnemies.Clear(); //如果不在攻击判定时间窗口内，则清空已击中的敌人集合，准备下一次攻击判定的记录
     }
 
 
@@ -328,6 +331,9 @@ public class AttackState : FSMState
                 player.HandleAttackMove(0); //攻击时的移动
             }
         }
+
+        Debug.Log($"尝试执行攻击位移，当前时间：{t}，攻击位移时间窗口：{step.attackMoveStartTime} - {step.attackMoveEndTime}");
+
     }
 
 }

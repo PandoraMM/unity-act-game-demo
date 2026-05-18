@@ -417,6 +417,7 @@ public class Player : MonoBehaviour
             var enemy = hit.GetComponent<Enemy>();
             if (enemy != null && !hitEnemies.Contains(enemy)) //判断：如果敌人不为空 且 敌人没有被打过（Contains表示“包含”）
             {
+                Debug.Log($"攻击打到了敌人：{enemy.name}"); //输出日志，显示打到了哪个敌人
                 hitEnemies.Add(enemy); //将这个没被打过的敌人添加到哈希集合中，以记录已经打过了，避免重复伤害
                 enemy.OnHurt(transform.position , attackBackForce , enemyHitStopDuration); //把玩家的坐标传给敌人，让敌人知道从哪里受的击，以便计算击退的方向
             }
@@ -452,7 +453,8 @@ public class Player : MonoBehaviour
 
 
     /// <summary>
-    /// 判断：角色是否处于击中停顿状态
+    /// 判断：角色是否处于击中停顿状态，
+    /// 在状态的Update和FixedUpdate中进行调用，防止在边界条件下，不但进行了HitStop，同时还切换了状态的极端情况
     /// </summary>
     /// <returns></returns>
     public bool IsInHitStop() => isHitStop;

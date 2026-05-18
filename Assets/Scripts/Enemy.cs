@@ -64,7 +64,7 @@ public class Enemy : MonoBehaviour
     /// <param name="enemyHitStopDuration"></param>
     public void OnHurt(Vector2 hitDirection, float attackBackForce, float enemyHitStopDuration)
     {
-        Debug.Log("我TM被干了！！！");
+        //Debug.Log("我TM被干了！！！");
 
         //1.先击退：计算击退方向，敌人会朝着远离攻击来源的方向被击退，所以用敌人当前坐标减去攻击来源坐标得到一个向量，然后归一化这个向量得到方向
         direction = ((Vector2)transform.position - hitDirection).normalized;

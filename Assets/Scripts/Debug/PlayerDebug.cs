@@ -54,7 +54,7 @@ public class PlayerDebug : MonoBehaviour
         GUI.Label(new Rect(10, 10, 1920, 600), $"PlayerState: {player.stateMachine.CurrentState.GetType().Name + " " +Time.frameCount}");
 
         GUI.skin.label.fontSize = 30;
-        GUI.Label(new Rect(10, 110, 1920, 600), $"AttackStage: {player.attackState.GetCurrentAttackStage()}");
+        //GUI.Label(new Rect(10, 110, 1920, 600), $"AttackStage: {player.attackState.GetCurrentAttackStage()}");
 
         GUI.skin.label.fontSize = 30;
         GUI.Label(new Rect(10, 150, 1920, 600), $"Step Index: {player.currentStepIndex}");
