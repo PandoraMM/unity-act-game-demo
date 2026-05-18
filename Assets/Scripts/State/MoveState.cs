@@ -28,7 +28,7 @@ public class MoveState : GroundState
     {
 
         base.OnUpdate();
-        player.IsInHitStop();
+        if(player.IsInHitStop())return; //如果在击中停顿中则不执行攻击位移
 
         if (player.OnIsCanFlip())
         {
@@ -46,7 +46,7 @@ public class MoveState : GroundState
     {
         base.OnFixedUpdate();
         player.HandleMove(player.inputDirection);
-        player.IsInHitStop();
+        if(player.IsInHitStop())return; //如果在击中停顿中则不执行固定更新逻辑
     }
 
 }
