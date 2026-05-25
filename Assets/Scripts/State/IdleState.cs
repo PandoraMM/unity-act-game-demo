@@ -26,7 +26,7 @@ public class IdleState : GroundState
     public override void OnUpdate()
     {
         base.OnUpdate();
-        player.IsInHitStop(); 
+        if(player.IsInHitStop())return; //如果在击中停顿中则不执行待机状态逻辑
         if (player.inputDirection != 0)
         {
             stateMachine.OnChangeState(player.moveState);
@@ -39,7 +39,7 @@ public class IdleState : GroundState
         base.OnFixedUpdate();
         player.HandleMove(0);
 
-        player.IsInHitStop(); 
+        if(player.IsInHitStop())return; //如果在击中停顿中则不执行固定更新逻辑
     }
 
 

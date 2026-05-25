@@ -360,7 +360,7 @@ public class Player : MonoBehaviour
 
 
     /// <summary>
-    /// 判断：获取当前动画的归一化时间，既可以判断动画名字是否匹配，也可以获取当前动画的归一化时间
+    /// 判断：如果当前动画匹配，就返回归一化时间，既可以判断动画名字是否匹配，也可以获取当前动画的归一化时间
     /// </summary>
     /// <param name="animName">动画的名字</param>
     /// <param name="normalizedTime">out参数，返回当前动画的归一化时间</param>
