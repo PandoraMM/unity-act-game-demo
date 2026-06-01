@@ -113,6 +113,7 @@ public class AttackState : FSMState
         if(CanInputNextCombo() && player.OnIsAttackRequest())//检测到处于连击输入窗口内且有攻击输入请求  
         {
             player.OnAttackInputConsume();//消费掉攻击输入
+
             var step = comboSteps[player.currentStepIndex];
             if(step.nextStepIndex != -1 )
             {
@@ -288,6 +289,7 @@ public class AttackState : FSMState
     public void TryDoHit()
     {
         if(player.IsInHitStop())return; //如果在击中停顿中则不执行攻击判定
+        
         if(player.currentStepIndex >= comboSteps.Length) return;  //索引边界判断，如果越界返回false
         var attackStep = comboSteps[player.currentStepIndex];
         if(player.TryGetNormalizedTimeOfAnimation(attackStep.animShortHashName, out var t , attackStep.animLayer))
@@ -314,6 +316,7 @@ public class AttackState : FSMState
     public void TryDoAttackMove()
     {
         if(player.IsInHitStop())return; //如果在击中停顿中则不执行攻击位移
+
         if(player.currentStepIndex >= comboSteps.Length) return;  //索引边界判断，如果越界返回false
         var step = comboSteps[player.currentStepIndex];
         if(player.TryGetNormalizedTimeOfAnimation(step.animShortHashName, out var t, step.animLayer))
