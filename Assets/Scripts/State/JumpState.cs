@@ -5,8 +5,8 @@ using UnityEngine;
 public class JumpState : FSMState
 {
 
-    private float jumpEnterTime; //��¼������Ծ״̬��ʱ��
-    private const float minAirTime = 0.05f; //��С����ʱ�䣬��ֹ�����ⶶ������״̬Ƶ���л�
+    private float jumpEnterTime; //进入跳跃状态的时间
+    private const float minAirTime = 0.05f; //最小空中时间，防止连续跳跃状态切换
 
 
 
@@ -30,7 +30,7 @@ public class JumpState : FSMState
         base.OnUpdate();
         if(player.IsInHitStop())return; //如果在击中停顿中则不执行跳跃状态逻辑
 
-        // ���ٵ�һС��ʱ�䣬��������ж��������ȴ��������£�
+        //=======================地面状态切换=======================
         if (Time.time - jumpEnterTime < minAirTime) return;
 
         if (player.OnIsCanFlip()) { player.OnFlip(); } //����ת��
