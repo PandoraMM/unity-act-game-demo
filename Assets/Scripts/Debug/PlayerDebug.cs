@@ -91,7 +91,7 @@ public class PlayerDebug : MonoBehaviour
         if (!player.TryGetNormalizedTimeOfAnimation(step.animShortHashName, out var t)) return;
 
         // 👉 判断是否在攻击判定窗口
-        if (t < step.hitStartTime || t > step.hitEndTime) return;
+        if (t < step.hitStartWindow || t > step.hitEndWindow) return;
 
         // 👉 计算攻击中心
         Vector2 center = new Vector2(player.transform.position.x + (step.hitOffset.x * player.CurrentDirection),player.transform.position.y + step.hitOffset.y);
