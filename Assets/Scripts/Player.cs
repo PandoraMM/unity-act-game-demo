@@ -282,25 +282,6 @@ public class Player : MonoBehaviour
 
 
     /// <summary>
-    /// 控制可变化的跳跃
-    /// </summary>
-    /// <param name="jumpEnterTime">进入跳跃状态的时间</param>
-    public void OnHandleVeriableJump(float jumpEnterTime) 
-    {
-        if (Time.time - jumpEnterTime > miniJumpTime)
-        {
-            if (Rising() && !isJumpInputHold)   
-            {
-                float targetVelocityV = Mathf.MoveTowards(PRB2D.linearVelocity.y , 0 , 80 *Time.fixedDeltaTime); //先写一个魔法数字，让这里的操作手感稍微好一点
-
-                PRB2D.linearVelocity = new Vector2(PRB2D.linearVelocity.x, targetVelocityV);
-            }
-        }
-    }
-
-
-
-    /// <summary>
     /// 跳跃挂起讯号
     /// </summary>
     /// <returns></returns>

@@ -5,6 +5,9 @@ using UnityEngine;
 public class JumpState : FSMState
 {
 
+
+    private JumpPhase currentJumpPhase; //当前跳跃阶段
+
     private float jumpEnterTime; //进入跳跃状态的时间
     private const float minAirTime = 0.05f; //最小空中时间，防止连续跳跃状态切换
 
@@ -18,7 +21,7 @@ public class JumpState : FSMState
     {
         base.OnEnter();
         jumpEnterTime = Time.time;
-
+        currentJumpPhase = JumpPhase.jumpStart;
         player.Jump();
 
     }
@@ -58,7 +61,6 @@ public class JumpState : FSMState
         float targetGravity = player.GetTargetGravity();
         player.ApplyGravity(targetGravity);
         player.HandleInAirMove(player.inputDirection);
-        player.OnHandleVeriableJump(jumpEnterTime);
 
 
     }
