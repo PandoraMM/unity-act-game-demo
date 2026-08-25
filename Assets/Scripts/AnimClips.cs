@@ -11,4 +11,10 @@ public static class AnimClips
     public static readonly int actionAttack1 = Animator.StringToHash("attack1"); //动画片段-攻击一段
     public static readonly int actionAttack2 = Animator.StringToHash("attack2"); //动画片段-攻击二段
     public static readonly int actionHurt = Animator.StringToHash("hit"); //动画片段-受伤
+    public static readonly int actionJumpStart = Animator.StringToHash("jumpStart"); //动画片段-跳跃预备
+    public static readonly int actionJumpRising = Animator.StringToHash("jumpRising"); //动画片段-上升
+    public static readonly int actionJumpApex = Animator.StringToHash("jumpApex"); //动画片段-最高点
+    public static readonly int actionJumpFalling = Animator.StringToHash("jumpFalling"); //动画片段-下降
+    public static readonly int actionLanding = Animator.StringToHash("landing"); //动画片段-着陆
+
 }

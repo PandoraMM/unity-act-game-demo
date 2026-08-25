@@ -91,8 +91,6 @@ public class Player : MonoBehaviour
 
     void Update()
     {
-        stateMachine.CurrentState.OnUpdate();
-
         inputDirection = (int)Input.GetAxisRaw("Horizontal");
 
         if (Input.GetKeyDown(KeyCode.J))        //跳跃按下
@@ -128,6 +126,8 @@ public class Player : MonoBehaviour
                 RecoverFromeHitStop(); //恢复角色的正常状态
             }
         }
+
+        stateMachine.CurrentState.OnUpdate();
     }
 
 
@@ -138,13 +138,13 @@ public class Player : MonoBehaviour
 
         if (isOnGround) { lastGroundTime = Time.time; } //记录上一次落地的时间，用于做土狼时间的时间判断依据
 
-        stateMachine.CurrentState.OnFixedUpdate();
-
         if(isHitStop) //如果处于击中停顿状态，在FixedUpdate中持续将角色的速度设置为0，来确保角色在停顿期间完全停在原地不动，不受任何外力的影响
         {
             PRB2D.linearVelocity = Vector2.zero;
             return; //直接返回，跳过后续的逻辑，确保在击中停顿状态下角色完全不受任何外力的影响
         }
+
+        stateMachine.CurrentState.OnFixedUpdate();
     }
 
 
@@ -259,7 +259,7 @@ public class Player : MonoBehaviour
     /// 根据跳跃输入的时间判断角色是否可以跳跃（也就是跳跃缓冲）
     /// </summary>
     /// <returns></returns>
-    public bool IsCanJump() =>Time.time - lastJumpInputTime <= JumpBufferDuration;
+    public bool IsCanJump() => isPendingJumpInput && Time.time - lastJumpInputTime <= JumpBufferDuration;
 
 
 

@@ -1,0 +1,145 @@
+# 项目记录
+
+## 当前目标：完成普通跳跃的五阶段表现
+
+在开始 JumpAttack 之前，先把普通跳跃的表现完整跑通：
+
+```text
+JumpStart → JumpRising → JumpApex → JumpFalling → Land → Idle / Move
+```
+
+这里的五个名称是“跳跃阶段”，不是五个 FSM State。当前阶段继续保持一个 `JumpState`；不要新建 `StartJumpState`、`RisingState`、`ApexState`、`FallingState` 或 `LandState`。
+
+职责暂定如下：
+
+- `JumpState`：管理一次普通跳跃的进入、空中物理、阶段识别与落地出口。
+- `JumpPhase`：记录当前跳跃阶段，用于动画表现、调试，以及未来空中攻击对阶段的判断。
+- `Player`：保留输入 Buffer、土狼时间、地面检测、移动与重力等通用能力。
+- `IdleState / MoveState`：在落地表现结束后接管角色。
+
+`Rising / Apex / Falling` 本质上是垂直速度阶段，不是新的 FSM State：
+
+- Rising：`linearVelocity.y > 0.1f`
+- Apex：`Abs(linearVelocity.y) < 0.1f`
+- Falling：其余下降阶段
+
+## 实施顺序
+
+### 1. 先修正输入与消费逻辑
+
+`Player.Update()` 目前先运行 `stateMachine.CurrentState.OnUpdate()`，之后才读取方向与按键。这会令状态读取到上一帧的输入。
+
+调整顺序为：
+
+```text
+读取方向与按键、更新输入 Buffer
+→ 处理 HitStop 计时
+→ CurrentState.OnUpdate()
+```
+
+同时，`IsCanJump()` 必须检查 `isPendingJumpInput`，否则 `OnJumpInputConsume()` 实际上不会令已消费的跳跃输入失效：
+
+```csharp
+public bool IsCanJump() =>
+    isPendingJumpInput &&
+    Time.time - lastJumpInputTime <= JumpBufferDuration;
+```
+
+### 2. 添加跳跃阶段与动画名
+
+在 `ActionEnums.cs` 增加：
+
+```csharp
+public enum JumpPhase
+{
+    JumpStart,
+    JumpRising,
+    JumpApex,
+    JumpFalling,
+    Land,
+}
+```
+
+在 `AnimClips.cs` 增加对应的动画 Hash：
+
+```text
+JumpStart / JumpRising / JumpApex / JumpFalling / Land
+```
+
+### 3. 在 JumpState 进入时播放 JumpStart
+
+进入 `JumpState` 时，物理起跳仍然立即发生：
+
+```text
+记录 jumpEnterTime
+→ currentJumpPhase = JumpStart
+→ player.Jump()
+→ 播放 JumpStart
+```
+
+当前不要改成“动画播完才起跳”。那会额外引入动画事件、离地延迟和输入时序问题。
+
+为 `JumpStart` 设置很短的表现时间（约 0.05–0.1 秒）；时间结束后才开始依据 Y 速度切换 Rising、Apex、Falling 动画。否则 `JumpRising` 会在下一物理帧立刻覆盖 `JumpStart`，导致启动动画不可见。
+
+### 4. 在 JumpState 内统一更新空中阶段
+
+`OnFixedUpdate()` 继续负责空中移动和重力。阶段变化时才更新 `currentJumpPhase` 并播放对应动画。
+
+阶段识别、重力和水平移动保持分工：
+
+```text
+JumpPhase：当前是什么阶段、该播什么动画
+GetTargetGravity：该阶段使用什么重力
+HandleInAirMove：空中如何控制水平方向
+```
+
+不需要为此改造 FSMStateMachine，也不要现在创建 AirSystem。
+
+### 5. 以 JumpState 内部阶段实现 Land
+
+当前一检测到 `isOnGround` 就切换到 `IdleState / MoveState`，会使 Land 动画立刻被 Idle 或 Move 覆盖。
+
+在 `JumpState` 内加入 `isLanding`：
+
+```text
+首次检测到落地
+→ currentJumpPhase = Land
+→ 播放 Land
+→ isLanding = true
+
+Land 动画完成
+→ 根据 inputDirection 切换到 IdleState 或 MoveState
+```
+
+处于 Land 时：
+
+- 停止空中阶段动画切换；
+- 不执行可变跳；
+- 重力恢复为 `defaultGravity`；
+- 暂时不响应攻击或再次跳跃，等动画结束后由地面状态接管。
+
+如果后续实际手感证明落地需要可取消，再单独增加取消规则；现在不要预先设计。
+
+## 验证清单
+
+- 原地跳、移动跳都能完整经过五个阶段。
+- JumpStart 可见且不会延迟实际起跳。
+- Rising / Apex / Falling 的动画只在阶段变化时切换。
+- Land 可完整播放，结束后正确进入 Idle 或 Move。
+- 短按跳、长按跳、土狼跳、跳跃 Buffer 均不会触发意外二次起跳。
+- 落地后立刻改变方向，最终状态与输入方向一致。
+
+## 当前已知阻塞项
+
+1. `JumpState.cs` 已引用 `JumpPhase`，但 `ActionEnums.cs` 尚未声明该枚举，因此会报 `CS0246`。
+2. `Assets/Settings/Scripts` 中的 `.cs` 与 `.meta` 文件是 Git LFS 占位文本，不是实际 Unity 资源；其中 `MoveState.cs.meta` 因无有效 GUID 被 Unity 忽略。不要手改 GUID 或只删一个 `.meta`。需要确认该目录应通过 Git LFS 恢复真实资源，还是作为无用重复目录整体移除。
+
+## 下一阶段
+
+五阶段普通跳跃稳定后，再做最小的 JumpAttack 闭环：
+
+```text
+JumpState → AttackState → 回到 JumpState 的空中运动 → Land
+```
+
+届时只根据真实出现的重复，再判断是否需要提取空中动作相关结构；当前不提前实现 AirSystem。

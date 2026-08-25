@@ -653,12 +653,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 256
   groundCheckRadius: 0.5
-  debugHitCenter: {x: 0, y: 0}
-  debugHitRadius: 0
-  debugHitTimer: 0
-  debugPreviewCenter: {x: 0, y: 0}
-  debugPreviewRadius: 0
-  debugShowPreview: 0
+  isHitStop: 0
 --- !u!70 &1011364919
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
