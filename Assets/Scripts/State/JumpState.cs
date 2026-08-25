@@ -21,6 +21,7 @@ public class JumpState : FSMState
         currentJumpPhase = JumpPhase.jumpStart;
         player.Jump();
         player.PlayAnimation(AnimClips.actionJumpStart, AnimClips.baseLayer);
+              player.HandleInAirMove(player.inputDirection);
     }
 
 
@@ -81,7 +82,7 @@ public class JumpState : FSMState
 
         float targetGravity = player.GetTargetGravity();
         player.ApplyGravity(targetGravity);
-        player.HandleInAirMove(player.inputDirection);
+        //player.HandleInAirMove(player.inputDirection);
 
         UpdateAirPhase();
     }
