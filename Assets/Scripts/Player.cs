@@ -198,9 +198,17 @@ public class Player : MonoBehaviour
     /// 控制空中移动
     /// </summary>
     /// <param name="inputX"></param>
-    public void HandleInAirMove(float inputX)
+    public void HandleInAirMove(float inputX , JumpType type)
     {
-        HandleMove(inputX);//偷懒的做法，因为我暂时决定玩家可以自由的控制角色在空中时的水平方向的速度，所以直接取水平移动的方法~~哈哈哈~~
+        if(type == JumpType.NormalJump)
+        {
+            HandleMove(inputX * 0.2f);//偷懒的做法，因为我暂时决定玩家可以自由的控制角色在空中时的水平方向的速度，所以直接取水平移动的方法~~哈哈哈~~
+        }
+        // else
+        // {
+        //     HandleMove(inputX > 0 ? 1 : -1);//偷懒的做法，因为我暂时决定玩家可以自由的控制角色在空中时的水平方向的速度，所以直接取水平移动的方法~~哈哈哈~~
+        // }
+
     }
 
 

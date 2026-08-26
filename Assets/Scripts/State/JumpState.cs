@@ -5,6 +5,7 @@ using UnityEngine;
 public class JumpState : FSMState
 {
 
+    private JumpType currentJumpType; //当前跳跃类型
     private JumpPhase currentJumpPhase; //当前跳跃阶段
     private float jumpEnterTime; //进入跳跃状态的时间
     private const float minAirTime = 0.05f; //最小空中时间，防止连续跳跃状态切换
@@ -21,7 +22,15 @@ public class JumpState : FSMState
         currentJumpPhase = JumpPhase.jumpStart;
         player.Jump();
         player.PlayAnimation(AnimClips.actionJumpStart, AnimClips.baseLayer);
-              player.HandleInAirMove(player.inputDirection);
+
+        if(player.inputDirection == 0)
+        {
+            currentJumpType = JumpType.NormalJump;
+        }
+        else
+        {
+            currentJumpType = JumpType.FrontFlip;
+        }
     }
 
 
@@ -82,7 +91,8 @@ public class JumpState : FSMState
 
         float targetGravity = player.GetTargetGravity();
         player.ApplyGravity(targetGravity);
-        //player.HandleInAirMove(player.inputDirection);
+
+        player.HandleInAirMove(player.inputDirection, currentJumpType);
 
         UpdateAirPhase();
     }
@@ -112,7 +122,7 @@ public class JumpState : FSMState
         
         if(currentJumpPhase == nextPhase) return; //如果当前阶段和下一阶段相同，则不切换阶段，让动画继续播放，防止出现刷新问题导致动画卡住
         currentJumpPhase = nextPhase; //更新当前阶段，这样才能保证下一次进入这个方法时，能够正确判断当前阶段和下一阶段是否相同
-        player.PlayAnimation(GetAnimationOf(currentJumpPhase));
+        player.PlayAnimation(GetAnimationOf(currentJumpPhase,currentJumpType));
     }
 
 
@@ -122,21 +132,33 @@ public class JumpState : FSMState
     /// </summary>
     /// <param name="phase"></param>
     /// <returns></returns>
-    public int GetAnimationOf(JumpPhase phase)
+    public int GetAnimationOf(JumpPhase phase , JumpType type)
     {
         switch (phase)
         {
             case JumpPhase.jumpStart:
-                return AnimClips.actionJumpStart;
+                return type == JumpType.NormalJump ? AnimClips.actionJumpStart : AnimClips.actionFrontFlipStart;
             case JumpPhase.jumpRising:
-                return AnimClips.actionJumpRising;
+                return type == JumpType.NormalJump ? AnimClips.actionJumpRising : AnimClips.actionFrontFlipRising;
             case JumpPhase.jumpApex:
-                return AnimClips.actionJumpApex;
+                return type == JumpType.NormalJump ? AnimClips.actionJumpApex : AnimClips.actionFrontFlipApex;
             case JumpPhase.jumpFalling:
-                return AnimClips.actionJumpFalling;
+                return type == JumpType.NormalJump ? AnimClips.actionJumpFalling : AnimClips.actionFrontFlipFalling;
             default:
-                return AnimClips.actionJumpRising;
+                return type == JumpType.NormalJump ? AnimClips.actionJumpRising : AnimClips.actionFrontFlipRising;
         }
+        // {
+        //     case JumpPhase.jumpStart:
+        //         return AnimClips.actionJumpStart;
+        //     case JumpPhase.jumpRising:
+        //         return AnimClips.actionJumpRising;
+        //     case JumpPhase.jumpApex:
+        //         return AnimClips.actionJumpApex;
+        //     case JumpPhase.jumpFalling:
+        //         return AnimClips.actionJumpFalling;
+        //     default:
+        //         return AnimClips.actionJumpRising;
+        // }
     } 
 
 

@@ -17,7 +17,25 @@ public enum StateIntention
 
 
 /// <summary>
-/// 玩家跳跃阶段的枚举
+/// 玩家跳跃类型的枚举
+/// </summary>
+public enum JumpType
+{
+    /// <summary>
+    /// 原地跳跃
+    /// </summary>
+    NormalJump,
+
+    /// <summary>
+    /// 前空翻
+    /// </summary>
+    FrontFlip,
+}
+
+
+
+/// <summary>
+/// 玩家跳跃阶段的枚举: 注意，这个枚举是针对原地跳跃和前空翻通用的
 /// </summary>
 public enum JumpPhase
 {
