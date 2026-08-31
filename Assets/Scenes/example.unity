@@ -639,9 +639,12 @@ MonoBehaviour:
   miniJumpTime: 0.2
   isJumpInputHold: 0
   defaultGravity: 1
-  risingGravity: 1
-  apexGravity: 0.5
-  fallingGravity: 4
+  normalRisingGravity: 1
+  normalApexGravity: 0.2
+  normalFallingGravity: 4
+  flipRisingGravity: 2
+  flipApexGravity: 0.2
+  flipFallingGravity: 8
   gravityChangeSpeed: 7
   attackBufferDuration: 0.2
   currentStepIndex: 0

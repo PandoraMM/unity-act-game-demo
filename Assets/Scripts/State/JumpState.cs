@@ -30,6 +30,7 @@ public class JumpState : FSMState
         else
         {
             currentJumpType = JumpType.FrontFlip;
+            player.SetHorizontalVelocityMax();
         }
     }
 
@@ -89,7 +90,7 @@ public class JumpState : FSMState
             return;
         }
 
-        float targetGravity = player.GetTargetGravity();
+        float targetGravity = player.GetTargetGravity(currentJumpType);
         player.ApplyGravity(targetGravity);
 
         player.HandleInAirMove(player.inputDirection, currentJumpType);
@@ -141,7 +142,7 @@ public class JumpState : FSMState
             case JumpPhase.jumpRising:
                 return type == JumpType.NormalJump ? AnimClips.actionJumpRising : AnimClips.actionFrontFlipRising;
             case JumpPhase.jumpApex:
-                return type == JumpType.NormalJump ? AnimClips.actionJumpApex : AnimClips.actionFrontFlipApex;
+                return  type == JumpType.NormalJump ? AnimClips.actionJumpApex : AnimClips.actionFrontFlipApex;
             case JumpPhase.jumpFalling:
                 return type == JumpType.NormalJump ? AnimClips.actionJumpFalling : AnimClips.actionFrontFlipFalling;
             default:

@@ -35,12 +35,14 @@ public class Player : MonoBehaviour
     public float jumpSpeed = 4; //起跳的速度
     public float JumpBufferDuration = 0.5f; //跳跃缓冲倒计时
     public float coyoteTimeDuration = 0.5f; //土狼时间
-    public float miniJumpTime = 0.5f; //最小跳跃持续时间
     public bool isJumpInputHold = false; //是否持续按住了跳跃按键
     public float defaultGravity = 1; //角色默认的重力
-    public float risingGravity = 1f; //角色上升的重力
-    public float apexGravity = 0.2f; //角色达到最高点的重力
-    public float fallingGravity = 4f; //角色下降的重力
+    public float normalRisingGravity = 1f; //角色上升的重力
+    public float normalApexGravity = 0.2f; //角色达到最高点的重力
+    public float normalFallingGravity = 4f; //角色下降的重力
+    public float flipRisingGravity = 1f; //前空翻上升的重力
+    public float flipApexGravity = 0.2f; //前空翻达到
+    public float flipFallingGravity = 4f; //前空翻下降的重力
     public float gravityChangeSpeed = 2f; //重力变化量
     public float attackBufferDuration = 0.8f; //攻击缓冲时间
     public int currentStepIndex  = 0; ///当前攻击连段的节点
@@ -181,6 +183,13 @@ public class Player : MonoBehaviour
 
 
 
+    public void SetHorizontalVelocityMax()
+    {
+        float targetSpeed = currentDirection * moveMaxSpeed;
+        PRB2D.linearVelocity = new Vector2(targetSpeed, PRB2D.linearVelocity.y);
+    }
+
+
     /// <summary>
     /// 攻击时的移动
     /// </summary>
@@ -202,12 +211,8 @@ public class Player : MonoBehaviour
     {
         if(type == JumpType.NormalJump)
         {
-            HandleMove(inputX * 0.2f);//偷懒的做法，因为我暂时决定玩家可以自由的控制角色在空中时的水平方向的速度，所以直接取水平移动的方法~~哈哈哈~~
+            HandleMove(inputX * 0.3f);//偷懒的做法，因为我暂时决定玩家可以自由的控制角色在空中时的水平方向的速度，所以直接取水平移动的方法~~哈哈哈~~
         }
-        // else
-        // {
-        //     HandleMove(inputX > 0 ? 1 : -1);//偷懒的做法，因为我暂时决定玩家可以自由的控制角色在空中时的水平方向的速度，所以直接取水平移动的方法~~哈哈哈~~
-        // }
 
     }
 
@@ -241,11 +246,23 @@ public class Player : MonoBehaviour
     /// 获取目标重力
     /// </summary>
     /// <returns></returns>
-    public float GetTargetGravity() 
+    public float GetTargetGravity(JumpType type) 
     {
-        if (Rising())       { return risingGravity;  }
-        else if (Apex())    { return apexGravity;    }
-        else if (Falling()) { return fallingGravity; }
+        if(type == JumpType.NormalJump)
+        {
+            if (Rising())       { return normalRisingGravity;  }
+            else if (Apex())    { return normalApexGravity;    }
+            else if (Falling()) { return normalFallingGravity; }
+        }
+        else if(type == JumpType.FrontFlip)
+        {
+            if (Rising())       { return flipRisingGravity;  }
+            else if (Apex())    { return flipApexGravity;    }
+            else if (Falling()) { return flipFallingGravity; }
+        }
+        // if (Rising())       { return risingGravity;  }
+        // else if (Apex())    { return apexGravity;    }
+        // else if (Falling()) { return fallingGravity; }
 
         return defaultGravity;
     }
