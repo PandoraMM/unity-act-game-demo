@@ -117,8 +117,8 @@ public class JumpState : FSMState
         //对于跳跃预备阶段的判断，如果当前阶段就是跳跃预备 并且 在规定的预设时间内 直接返回，不切换阶段，这样就能保证跳跃预备阶段的动画能够完整播放
         if(currentJumpPhase == JumpPhase.jumpStart && Time.time - jumpEnterTime < jumpStartPresentationDuration) return;
 
-        JumpPhase nextPhase = player.Rising() ? JumpPhase.jumpRising : 
-                              player.Apex() ? JumpPhase.jumpApex : 
+        JumpPhase nextPhase = player.Rising(currentJumpType) ? JumpPhase.jumpRising : 
+                              player.Apex(currentJumpType) ? JumpPhase.jumpApex : 
                               JumpPhase.jumpFalling;
         
         if(currentJumpPhase == nextPhase) return; //如果当前阶段和下一阶段相同，则不切换阶段，让动画继续播放，防止出现刷新问题导致动画卡住

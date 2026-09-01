@@ -219,29 +219,55 @@ public class Player : MonoBehaviour
 
 
     /// <summary>
-    /// 正在上升
+    /// 跳跃：正在上升
     /// </summary>
     /// <returns></returns>
-    public bool Rising() => PRB2D.linearVelocity.y > 0.1f ;
+    public bool Rising(JumpType type)
+    {
+        if(type == JumpType.NormalJump)
+        {
+            return PRB2D.linearVelocity.y > 0.1f ;
+        }
+        else
+        {
+            return PRB2D.linearVelocity.y > 0.1f ;
+        }
+    }
     
     
 
     /// <summary>
-    /// 在最高点
+    /// 跳跃：在最高点
     /// </summary>
     /// <returns></returns>
-    public bool Apex() => Mathf.Abs(PRB2D.linearVelocity.y) < 0.1f ;
-    
-    
+    public bool Apex(JumpType type)
+    {
+        if(type == JumpType.NormalJump)
+        {
+            return Mathf.Abs(PRB2D.linearVelocity.y) < 0.1f ;
+        }
+        else
+        {
+            return Mathf.Abs(PRB2D.linearVelocity.y) < 1f ;
+        }
+    }
 
     /// <summary>
-    /// 正在下降
+    /// 跳跃：正在下降
     /// </summary>
     /// <returns></returns>
-    public bool Falling() => PRB2D.linearVelocity.y < 0f ;
+    public bool Falling(JumpType type)
+    {
+        if(type == JumpType.NormalJump)
+        {
+            return PRB2D.linearVelocity.y < 0.2f ;
+        }
+        else
+        {
+            return PRB2D.linearVelocity.y < -1f ;
+        }
+    }
 
-
-    
     /// <summary>
     /// 获取目标重力
     /// </summary>
@@ -250,19 +276,16 @@ public class Player : MonoBehaviour
     {
         if(type == JumpType.NormalJump)
         {
-            if (Rising())       { return normalRisingGravity;  }
-            else if (Apex())    { return normalApexGravity;    }
-            else if (Falling()) { return normalFallingGravity; }
+            if (Rising(type))       { return normalRisingGravity;  }
+            else if (Apex(type))    { return normalApexGravity;    }
+            else if (Falling(type)) { return normalFallingGravity; }
         }
         else if(type == JumpType.FrontFlip)
         {
-            if (Rising())       { return flipRisingGravity;  }
-            else if (Apex())    { return flipApexGravity;    }
-            else if (Falling()) { return flipFallingGravity; }
+            if (Rising(type))       { return flipRisingGravity;  }
+            else if (Apex(type))    { return flipApexGravity;    }
+            else if (Falling(type)) { return flipFallingGravity; }
         }
-        // if (Rising())       { return risingGravity;  }
-        // else if (Apex())    { return apexGravity;    }
-        // else if (Falling()) { return fallingGravity; }
 
         return defaultGravity;
     }
